@@ -58,16 +58,17 @@ export default function ChangeMPINPage() {
     return mpin.split('').every(digit => digit === firstDigit)
   }
 
-  // Clear MPIN when keypad is toggled off
-  useEffect(() => {
-    if (!showKeypad) {
-      if (currentStep === 'new-pin' && newPin.length > 0) {
-        setNewPin('')
-      } else if (currentStep === 'confirm-pin' && confirmPin.length > 0) {
-        setConfirmPin('')
-      }
-    }
-  }, [showKeypad, currentStep, newPin, confirmPin])
+  // Clear MPIN when keypad is toggled off - REMOVED to allow ESC without reset
+  // PIN fields should only be reset when explicitly going back to step 1
+  // useEffect(() => {
+  //   if (!showKeypad) {
+  //     if (currentStep === 'new-pin' && newPin.length > 0) {
+  //       setNewPin('')
+  //     } else if (currentStep === 'confirm-pin' && confirmPin.length > 0) {
+  //       setConfirmPin('')
+  //     }
+  //   }
+  // }, [showKeypad, currentStep, newPin, confirmPin])
 
   // Handle Escape key press
   useEffect(() => {
