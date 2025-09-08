@@ -80,7 +80,7 @@ export default function ChangeMPINCard({
                     ? 'text-gray-900' 
                     : 'text-green-700'
                 }`}>
-                  New PIN
+                  Set PIN
                 </span>
               </div>
             </div>
