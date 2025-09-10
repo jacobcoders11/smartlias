@@ -128,7 +128,7 @@ export default function MPINKeypad({
               type="button"
               disabled={isLoading}
               onClick={onBack}
-              className={`w-full h-14 sm:h-14 lg:h-14 rounded-lg bg-transparent hover:bg-gray-200 active:bg-gray-300
+              className={`w-full h-14 sm:h-14 lg:h-14 rounded-lg bg-transparent hover:bg-gray-300 active:bg-gray-300
                        text-gray-800 hover:text-gray-900 active:text-gray-900
                        transition-all duration-200 cursor-pointer
                        focus:outline-none

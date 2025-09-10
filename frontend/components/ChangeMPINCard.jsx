@@ -168,7 +168,7 @@ export default function ChangeMPINCard({
           style={{ boxShadow: showKeypad ? '0 -4px 6px rgba(0, 0, 0, 0.07), 0 -1px 3px rgba(0, 0, 0, 0.06)' : 'none' }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="h-full w-full bg-gray-100 backdrop-blur-sm rounded-b-lg flex flex-col">
+          <div className="h-full w-full bg-gray-200 backdrop-blur-sm rounded-b-lg flex flex-col">
             {/* Top handle indicator */}
             <div className="flex justify-center pt-2 cursor-pointer" onClick={closeKeypad}>
               <div className="w-10 h-1 bg-gray-400 rounded-full hover:bg-gray-500 active:bg-gray-600 transition-colors duration-200"></div>
@@ -200,7 +200,7 @@ export default function ChangeMPINCard({
       >
         {/* Mobile keypad - slides up from bottom */}
         <div 
-          className={`absolute inset-x-0 bottom-0 bg-gray-100 border-t border-gray-300 shadow-2xl pt-4 p-2 transition-transform duration-300 ease-out ${
+          className={`absolute inset-x-0 bottom-0 bg-gray-200 border-t border-gray-300 shadow-2xl pt-4 p-2 transition-transform duration-300 ease-out ${
             showKeypad ? 'translate-y-0' : 'translate-y-full'
           }`}
           style={{ boxShadow: '0 -10px 25px -3px rgba(0, 0, 0, 0.1), 0 -4px 6px -2px rgba(0, 0, 0, 0.05)' }}

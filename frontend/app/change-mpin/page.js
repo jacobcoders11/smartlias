@@ -1,14 +1,18 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ToastNotification from '../../components/ToastNotification'
 import PublicLayout from '../../components/PublicLayout'
 import ChangeMPINCard from '../../components/ChangeMPINCard'
+import PageLoading from '../../components/PageLoading'
 
 export default function ChangeMPINPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const [isValidToken, setIsValidToken] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [currentStep, setCurrentStep] = useState('new-pin') // 'new-pin' or 'confirm-pin'
   const [newPin, setNewPin] = useState('')
@@ -17,61 +21,39 @@ export default function ChangeMPINPage() {
   const [showKeypad, setShowKeypad] = useState(false) // Track keypad state for PublicLayout
   const toastRef = useRef()
 
-  const handleAlert = (message, type = 'info') => {
-    toastRef.current?.show(message, type)
-  }
+  // ALL HOOKS MUST BE AT THE TOP - NO CONDITIONAL LOGIC BEFORE HOOKS
 
-  // Demo: MPIN validation function for frontend
-  const validateMPIN = (mpin) => {
-    return {
-      length: mpin?.length === 6,
-      numeric: /^\d+$/.test(mpin),
-      notSequential: !isSequential(mpin),
-      notRepeating: !isRepeating(mpin)
-    }
-  }
-
-  const isSequential = (mpin) => {
-    if (mpin?.length !== 6) return false
-    
-    // Check for ascending sequence (123456, 234567, etc.)
-    let ascending = true
-    let descending = true
-    
-    for (let i = 1; i < mpin.length; i++) {
-      if (parseInt(mpin[i]) !== parseInt(mpin[i-1]) + 1) {
-        ascending = false
+  // Token validation - only allow 'qwe123'
+  useEffect(() => {
+    try {
+      const token = searchParams.get('token')
+      console.log('Token from URL:', token)
+      console.log('Token type:', typeof token)
+      console.log('Token comparison:', token === 'qwe123')
+      
+      if (token !== 'qwe123') {
+        console.log('Token validation failed, redirecting to 404')
+        // Redirect to 404 if token is invalid or missing
+        router.push('/not-found')
+        return
       }
-      if (parseInt(mpin[i]) !== parseInt(mpin[i-1]) - 1) {
-        descending = false
-      }
+      
+      console.log('Token validation successful')
+      // Add delay to show PageLoading component
+      setTimeout(() => {
+        setIsValidToken(true)
+      }, 500) // 2 second delay to show loading
+    } catch (error) {
+      console.error('Token validation error:', error)
+      // Fallback to 404 on any error
+      router.push('/not-found')
     }
-    
-    return ascending || descending
-  }
-
-  const isRepeating = (mpin) => {
-    if (mpin?.length !== 6) return false
-    
-    // Check if all digits are the same
-    const firstDigit = mpin[0]
-    return mpin.split('').every(digit => digit === firstDigit)
-  }
-
-  // Clear MPIN when keypad is toggled off - REMOVED to allow ESC without reset
-  // PIN fields should only be reset when explicitly going back to step 1
-  // useEffect(() => {
-  //   if (!showKeypad) {
-  //     if (currentStep === 'new-pin' && newPin.length > 0) {
-  //       setNewPin('')
-  //     } else if (currentStep === 'confirm-pin' && confirmPin.length > 0) {
-  //       setConfirmPin('')
-  //     }
-  //   }
-  // }, [showKeypad, currentStep, newPin, confirmPin])
+  }, [searchParams, router])
 
   // Handle Escape key press
   useEffect(() => {
+    if (!isValidToken) return // Don't set up event listeners until token is valid
+    
     const handleKeyPress = (event) => {
       // Handle Escape key
       if (event.key === 'Escape') {
@@ -99,10 +81,12 @@ export default function ChangeMPINPage() {
     // Use capture phase to handle events before other components
     document.addEventListener('keydown', handleKeyPress, true)
     return () => document.removeEventListener('keydown', handleKeyPress, true)
-  }, [showKeypad, currentStep, newPin, confirmPin])
+  }, [isValidToken, showKeypad, currentStep, newPin, confirmPin])
 
   // Handle focus behavior when keypad toggles
   useEffect(() => {
+    if (!isValidToken) return // Don't run until token is valid
+    
     if (!showKeypad) {
       // When keypad is closed, blur any active input and focus on body for mobile
       const isMobile = window.innerWidth < 768
@@ -113,9 +97,31 @@ export default function ChangeMPINPage() {
         document.body.focus()
       }
     }
-  }, [showKeypad])
+  }, [isValidToken, showKeypad])
 
-  // Demo: Handle new PIN step
+  // HELPER FUNCTIONS
+
+  const handleAlert = (message, type = 'info') => {
+    toastRef.current?.show(message, type)
+  }
+
+  const getCurrentPin = () => {
+    return currentStep === 'new-pin' ? newPin : confirmPin
+  }
+
+  const getPinValidation = () => {
+    return validateMPIN(newPin)
+  }
+
+  // Demo: MPIN validation function for frontend - simplified to only check 6 digits
+  const validateMPIN = (mpin) => {
+    return {
+      length: mpin?.length === 6,
+      numeric: /^\d+$/.test(mpin)
+    }
+  }
+
+  // Demo: Handle new PIN step - simplified validation
   const handleNewPinSubmit = () => {
     const validation = validateMPIN(newPin)
     
@@ -216,12 +222,9 @@ export default function ChangeMPINPage() {
     }
   }
 
-  const getCurrentPin = () => {
-    return currentStep === 'new-pin' ? newPin : confirmPin
-  }
-
-  const getPinValidation = () => {
-    return validateMPIN(newPin)
+  // CONDITIONAL RETURN AFTER ALL HOOKS
+  if (!isValidToken) {
+    return <PageLoading />
   }
 
   return (
@@ -232,7 +235,7 @@ export default function ChangeMPINPage() {
         hideBackgroundImage={showKeypad}
       >
         <ChangeMPINCard
-          currentStep={currentStep}
+          currentStep={currentStep}z
           newPin={newPin}
           confirmPin={confirmPin}
           getCurrentPin={getCurrentPin}
