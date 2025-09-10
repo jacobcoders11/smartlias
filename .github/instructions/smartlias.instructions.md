@@ -10,31 +10,30 @@ applyTo: '**'
 ### **Project Structure**
 ```
 smartlias/
-├── frontend/             # Next.js React Application (Port 3000)
-│   ├── app/             # Next.js app directory routes (Smart Parents)
-│   │   ├── admin/       # Admin dashboard pages
-│   │   ├── login/       # Login page
-│   │   ├── resident/    # Resident dashboard pages
-│   │   ├── layout.js    # Root layout component
-│   │   └── page.js      # Homepage
-│   ├── components/      # Reusable UI components (Dumb Children)
+├── frontend/              # Next.js React Application (Port 3000)
+│   ├── app/               # Next.js app directory routes (Smart Parents)
+│   │   ├── admin/         # Admin dashboard pages
+│   │   ├── login/         # Login page
+│   │   ├── resident/      # Resident dashboard pages
+│   │   ├── layout.js      # Root layout component
+│   │   └── page.js        # Homepage
+│   ├── components/        # Reusable UI components (Dumb Children)
 │   │   ├── authenticated/ # Protected components
-│   │   ├── common/      # Shared components (ToastNotification, etc.)
-│   │   └── public/      # Public components (LoginCard, etc.)
-│   ├── lib/             # Frontend utilities & auth
-│   ├── data/            # Sample JSON data (demo)
-│   ├── styles/          # CSS and styling
-│   └── package.json     # Frontend dependencies
+│   │   ├── common/        # Shared components (ToastNotification, etc.)
+│   │   └── public/        # Public components (LoginCard, etc.)
+│   ├── lib/               # Frontend utilities & auth
+│   ├── data/              # Sample JSON data (demo)
+│   ├── styles/            # CSS and styling
+│   └── package.json       # Frontend dependencies
 │
-├── backend/             # Express.js API Server (Port 5000)
-│   ├── routes/          # API route definitions
-│   ├── middleware/      # Auth, logging, error handlers
-│   ├── server.js        # Application entry point
-│   └── package.json     # Backend dependencies
+├── backend/               # Express.js API Server (Port 5000)
+│   ├── routes/            # API route definitions
+│   ├── middleware/        # Auth, logging, error handlers
+│   ├── server.js          # Application entry point
+│   └── package.json       # Backend dependencies
 │
-├── Makefile            # Development commands
-├── README.md           # Project documentation
-```
+├── Makefile               # Development commands
+├── README.md              # Project documentation
 
 ### **Technology Stack**
 - **Frontend**: Next.js 15+ with React 19+, Tailwind CSS 4+
@@ -208,6 +207,42 @@ const sanitizeInput = (input) => {
 - JWT tokens for authentication
 - Standardized error handling
 
+#### **Environment Variable Data Source Control (MANDATORY)**
+
+**All data source switching MUST use environment variables:**
+
+```javascript
+// CORRECT: Environment-controlled data source
+const API_CONFIG = {
+  USE_MOCK_DATA: process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || false,
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+}
+```
+
+**Environment Configuration:**
+```env
+# Development (.env.local)
+NEXT_PUBLIC_USE_MOCK_DATA=true    # Uses JSON files for development
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+
+# Production (deployment environment)
+NEXT_PUBLIC_USE_MOCK_DATA=false   # Uses real backend API
+NEXT_PUBLIC_API_URL=https://api.yourcompany.com
+```
+
+**Benefits:**
+- ✅ **No Code Changes**: Switch data sources without touching code
+- ✅ **Environment Specific**: Different settings for dev/staging/production
+- ✅ **CI/CD Friendly**: Set environment variables in deployment pipeline
+- ✅ **Team Friendly**: Each developer can customize their local environment
+- ✅ **Safe Defaults**: Explicit boolean checking with fallback values
+
+**Rules:**
+- **NEVER** hardcode `true`/`false` for data source switching
+- **ALWAYS** use `NEXT_PUBLIC_` prefix for client-side environment variables
+- **ALWAYS** provide safe defaults with `|| false` pattern
+- **ALWAYS** document environment variables in project documentation
+
 ### **📱 Mobile-First Design System**
 
 #### **Core Principles**
@@ -315,6 +350,51 @@ Admin Operations:
 GET    /api/admin/dashboard    # Admin dashboard data
 GET    /api/admin/users        # User management
 ```
+
+#### **Data Source Management (MANDATORY)**
+
+**Environment-Controlled Data Sources:**
+
+All data access MUST be controlled through environment variables to enable seamless switching between development (JSON files) and production (database) without code changes.
+
+**Frontend Implementation (`lib/auth.js`):**
+```javascript
+const API_CONFIG = {
+  // Environment-controlled data source
+  USE_MOCK_DATA: process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || false,
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+}
+
+class ApiClient {
+  static async request(endpoint, options = {}) {
+    if (API_CONFIG.USE_MOCK_DATA) {
+      // Use JSON files (development)
+      return MockApiService.handleRequest(endpoint, options)
+    }
+    
+    // Use real backend API (production)
+    const url = `${API_CONFIG.BASE_URL}${endpoint}`
+    // ... real API implementation
+  }
+}
+```
+
+**Environment Configuration:**
+```env
+# Development
+NEXT_PUBLIC_USE_MOCK_DATA=true
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+
+# Production
+NEXT_PUBLIC_USE_MOCK_DATA=false
+NEXT_PUBLIC_API_URL=https://api.yourcompany.com
+```
+
+**Benefits:**
+- ✅ **Zero Code Changes**: Switch environments via configuration only
+- ✅ **Development Speed**: Work with JSON files while backend is being built
+- ✅ **Testing Flexibility**: Test with known data sets or live API
+- ✅ **Deployment Safety**: Production flag prevents accidental mock data usage
 
 #### **Security Implementation**
 ```javascript
@@ -692,6 +772,7 @@ ORDER BY last_event DESC;
 - [ ] Reference existing login page for validation patterns
 - [ ] Use mobile-first design system classes
 - [ ] Implement proper input sanitization
+- [ ] Use environment variables for data source control
 
 ### **For Frontend Development**
 - [ ] Create Smart Parent component in `app/`
@@ -700,6 +781,7 @@ ORDER BY last_event DESC;
 - [ ] Use consistent color schemes and styling
 - [ ] Add loading states for all async operations
 - [ ] Test mobile responsiveness
+- [ ] Configure environment variables for API endpoints
 
 ### **For Backend Development**
 - [ ] Create RESTful API endpoints following naming convention
@@ -720,8 +802,74 @@ ORDER BY last_event DESC;
 ### **Key Reference Files**
 - **Frontend Patterns**: `app/login/page.js`
 - **Component Structure**: `components/public/LoginCard.jsx`
-- **Design System**: This context.md file
+- **Data Source Management**: `lib/auth.js`
+- **Environment Configuration**: `.env.local`
+- **Design System**: This smartlias.instructions.md file
 - **API Patterns**: Backend route files (when created)
+- **Production Release Guide**: `.github/instructions/production-release-guide.md`
+
+---
+
+## 🚀 PRODUCTION DEPLOYMENT
+
+### **Production Release Preparation**
+
+When preparing SMARTLIAS for production deployment, several demo-specific features and test code must be removed or configured. Follow the comprehensive guide located at:
+
+**📋 Complete Guide**: [Production Release Guide](./production-release-guide.md)
+
+### **Key Production Changes**
+
+#### **Demo Mode Configuration**
+```javascript
+// Current: Environment-controlled data source
+USE_MOCK_DATA: process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+
+// Production: Set environment variable to switch to backend API
+// NEXT_PUBLIC_USE_MOCK_DATA=false (uses backend API)
+// NEXT_PUBLIC_USE_MOCK_DATA=true (uses JSON files)
+```
+
+#### **Critical Files to Review**
+- **`components/public/LoginCard.jsx`**: Demo user interface elements
+- **`lib/auth.js`**: Data source configuration (mock vs. live API)
+- **`.env.local`**: Environment variables for data source control
+- **`data/users.json`**: Demo user accounts and test data
+
+#### **Production Deployment Checklist**
+- [ ] Set `NODE_ENV=production` in deployment environment
+- [ ] Configure real database connection (replace JSON files)
+- [ ] Update authentication endpoints to real backend API
+- [ ] Remove or secure demo user accounts
+- [ ] Test login flow with production credentials
+- [ ] Verify demo features are properly hidden
+- [ ] Configure proper CORS settings for production domain
+- [ ] Set up proper error logging and monitoring
+
+#### **Environment Variables (Production)**
+```env
+NODE_ENV=production
+NEXT_PUBLIC_USE_MOCK_DATA=false
+NEXT_PUBLIC_API_URL=https://your-api-domain.com
+DATABASE_URL=your-production-database-url
+JWT_SECRET=your-secure-jwt-secret
+```
+
+#### **Security Considerations**
+- Remove all demo credentials and test accounts
+- Implement proper password policies and validation
+- Configure rate limiting for authentication endpoints
+- Set up proper session management and token expiration
+- Enable HTTPS for all production traffic
+- Configure proper CORS policies
+
+### **Deployment Verification**
+After deployment, verify:
+1. Login page shows no demo credentials
+2. Authentication works with real user accounts
+3. All demo features are hidden from production users
+4. Error handling works properly in production
+5. Security headers and HTTPS are properly configured
 
 ---
 

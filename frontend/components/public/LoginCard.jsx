@@ -1,39 +1,29 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import MPINKeypad from '../common/MPINKeypad'
 import Spinner from '../common/Spinner'
 import Modal from '../common/Modal'
+import ToastNotification from '../common/ToastNotification'
 
 export default function LoginCard({
-  // Input values
   username,
+  setUsername,
   mpin,
-  
-  // Input handlers 
-  onUsernameChange,
-  onUsernameSubmit,
-  
-  // Keypad handlers
+  errors,
+  setErrors,
+  isLoading,
+  onLogin,
   onKeypadNumber,
   onKeypadBackspace,
-  onKeypadClose,
-  
-  // Login handler
-  onLogin,
-  
-  // UI state
-  showKeypad,
-  isLoading,
-  errors,
-  
-  // Optional props
+  onUsernameSubmit, // Add this prop for username validation
   showLogo = false,
   className = '',
-  demoCredentials = [] // Add demo credentials prop
+  showKeypad,
+  setShowKeypad
 }) {
-  // Only UI-specific state
   const [showForgotModal, setShowForgotModal] = useState(false)
+  const toastRef = useRef()
 
   // Clear MPIN when keypad is toggled off
   useEffect(() => {
@@ -66,7 +56,7 @@ export default function LoginCard({
         if (showKeypad) {
           event.preventDefault()
           event.stopPropagation()
-          onKeypadClose()
+          setShowKeypad(false)
         }
         return
       }
@@ -80,11 +70,8 @@ export default function LoginCard({
           if (onUsernameSubmit) {
             onUsernameSubmit(username.trim())
           }
-        } else if (showKeypad && mpin.length === 6) {
-          // If keypad is shown and MPIN is complete, trigger login
-          event.preventDefault()
-          handleMPINLogin()
         }
+        // Removed MPIN Enter handling - login now happens automatically on 6th digit
       }
     }
 
@@ -132,7 +119,7 @@ export default function LoginCard({
             if (showKeypad && window.innerWidth >= 1024) {
               e.preventDefault()
               e.stopPropagation()
-              onKeypadClose()
+              setShowKeypad(false)
             }
           }}
         >
@@ -149,19 +136,18 @@ export default function LoginCard({
 
         {/* Single Page Login Form */}
         <div className="h-full flex flex-col">
-          {/* DEMO: Demo Credentials - Show when keypad is not active */}
-          {!showKeypad && demoCredentials.length > 0 && (
+          {/* DEMO: Demo Credentials - TODO: Remove this entire section for production release */}
+          {!showKeypad && (
             <div className="mb-4 p-3 bg-blue-50 border-dashed border border-blue-200 rounded-md">
               <h4 className="text-sm font-medium text-blue-800 mb-2">Demo Credentials:</h4>
               <div className="text-xs text-blue-700 space-y-1">
-                {demoCredentials.map((cred, index) => (
-                  <div key={index}>
-                    <strong>{cred.role}:</strong> {cred.username} / {cred.mpin}
-                  </div>
-                ))}
+                <div><strong>User:</strong> juan.delacruz / 031590</div>
+                <div><strong>User:</strong> maria.santos / 120885</div>
+                <div><strong>Admin:</strong> admin.staff / 010180</div>
               </div>
             </div>
           )}
+          {/* DEMO: End of demo section */}
           
           {/* Username Input - Hide when keypad is active */}
           {!showKeypad && (
@@ -186,7 +172,8 @@ export default function LoginCard({
                     type="text"
                     value={username}
                     onChange={(e) => {
-                      onUsernameChange(e.target.value)
+                      setUsername(e.target.value)
+                      if (errors.username) setErrors(prev => ({ ...prev, username: '' }))
                     }}
                     onFocus={(e) => {
                       // Prevent zoom on mobile while allowing keyboard to overlay
@@ -225,12 +212,10 @@ export default function LoginCard({
               <button 
                 type="button"
                 onClick={() => {
-                  if (!username.trim()) {
-                    return // Let parent handle validation
+                  // Use parent validation instead of local validation
+                  if (onUsernameSubmit) {
+                    onUsernameSubmit(username.trim())
                   }
-                  
-                  // Use parent validation handler
-                  onUsernameSubmit(username.trim())
                 }}
                 disabled={isLoading || !username.trim()}
                 className={`w-24 h-24 sm:w-20 sm:h-20 lg:w-22 lg:h-22 rounded-xl shadow-lg 
@@ -242,7 +227,7 @@ export default function LoginCard({
                            ${isLoading ? 'opacity-60' : 'hover:scale-105 active:scale-95'}`}
               >
                 {isLoading ? (
-                  <Spinner size="sm" color="white" />
+                  <Spinner size="xl" color="white" />
                 ) : (
                   <div className="text-center">
                     <i className="bi bi-grid-3x3-gap text-3xl sm:text-2xl lg:text-3xl block mb-1"></i>
@@ -283,7 +268,7 @@ export default function LoginCard({
           }`}>
             <a 
               href="#" 
-              onClick={(e) => {
+              onClick={(e) => { 
                 e.preventDefault()
                 e.stopPropagation()
                 setShowForgotModal(true)
@@ -323,7 +308,7 @@ export default function LoginCard({
         >
           <div className="h-full w-full bg-gray-200 backdrop-blur-sm rounded-b-lg flex flex-col">
             {/* Top handle indicator */}
-            <div className="flex justify-center pt-2 cursor-pointer" onClick={() => onKeypadClose()}>
+            <div className="flex justify-center pt-2 cursor-pointer" onClick={() => setShowKeypad(false)}>
               <div className="w-10 h-1 bg-gray-400 rounded-full hover:bg-gray-400 active:bg-gray-400 transition-colors duration-200"></div>
             </div>
             {/* Keypad content */}
@@ -333,7 +318,7 @@ export default function LoginCard({
                     mpin={mpin}
                     onNumberPress={onKeypadNumber}
                     onBackspace={onKeypadBackspace}
-                    onBack={() => onKeypadClose()}
+                    onBack={() => setShowKeypad(false)}
                     errors={errors}
                     isLoading={isLoading}
                     showKeypad={true}
@@ -352,7 +337,7 @@ export default function LoginCard({
         onClick={(e) => {
           // Close keypad if clicking outside the keypad content
           if (e.target === e.currentTarget) {
-            onKeypadClose()
+            setShowKeypad(false)
           }
         }}
       >
@@ -366,7 +351,7 @@ export default function LoginCard({
           {/* iOS-style separator handle - clickable to close keypad */}
           <div 
             className="flex justify-center -mt-5 mb-1 cursor-pointer py-2"
-            onClick={() => onKeypadClose()}
+            onClick={() => setShowKeypad(false)}
           >
             <div className="w-15 h-1 bg-gray-400 rounded-full hover:bg-gray-500 transition-colors duration-200"></div>
           </div>
@@ -377,7 +362,7 @@ export default function LoginCard({
               mpin={mpin}
               onNumberPress={onKeypadNumber}
               onBackspace={onKeypadBackspace}
-              onBack={() => onKeypadClose()}
+              onBack={() => setShowKeypad(false)}
               errors={errors}
               isLoading={isLoading}
               showKeypad={true}
@@ -399,6 +384,7 @@ export default function LoginCard({
       </Modal>
 
       {/* Toast Notification */}
+      <ToastNotification ref={toastRef} />
     </>
   )
 }
