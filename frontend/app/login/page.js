@@ -3,21 +3,35 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import ToastNotification from '../../components/common/ToastNotification'
-import PublicLayout from '../../components/landing/PublicLayout'
-import LoginCard from '../../components/landing/LoginCard'
+import PublicLayout from '../../components/public/PublicLayout'
+import LoginCard from '../../components/public/LoginCard'
 import { auth } from '../../lib/auth'
 
 export default function LoginPage() {
+  // ============================================
+  // STATE MANAGEMENT
+  // ============================================
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [currentStep, setCurrentStep] = useState('username') // 'username' or 'mpin'
-  const [username, setUsername] = useState('')
-  const [mpin, setMpin] = useState('') // Changed from password to mpin
-  const [userInfo, setUserInfo] = useState(null) // Store user details after username validation
-  const [errors, setErrors] = useState({})
-  const [showKeypad, setShowKeypad] = useState(false) // Track keypad state for PublicLayout
   const toastRef = useRef()
+  
+  const [isLoading, setIsLoading] = useState(false)
+  const [username, setUsername] = useState('')
+  const [mpin, setMpin] = useState('')
+  const [errors, setErrors] = useState({})
+  const [showKeypad, setShowKeypad] = useState(false)
 
+  // ============================================
+  // DEMO CREDENTIALS
+  // ============================================
+  const demoCredentials = [
+    { username: 'juan.delacruz', mpin: '031590', role: 'User' },
+    { username: 'maria.santos', mpin: '120885', role: 'User' },
+    { username: 'admin.staff', mpin: '010180', role: 'Admin' }
+  ]
+
+  // ============================================
+  // UTILITY FUNCTIONS
+  // ============================================
   const handleAlert = (message, type = 'info') => {
     toastRef.current?.show(message, type)
   }
@@ -31,105 +45,95 @@ export default function LoginPage() {
       .slice(0, 100) // Limit length
   }
 
-  const validateUsername = () => {
+  // ============================================
+  // VALIDATION FUNCTIONS
+  // ============================================
+  const validateUsername = (usernameToValidate) => {
+    const sanitizedUsername = sanitizeInput(usernameToValidate)
+    const newErrors = {}
+    
     // Demo: Simplified validation for testing frontend design/UX
     const EASY_TESTING = true; // Set to false for real validation
     
     if (EASY_TESTING) {
       // Demo: Allow any non-empty username for testing
-      const newErrors = {}
-      const sanitizedUsername = sanitizeInput(username)
-      
       if (!sanitizedUsername) {
         newErrors.username = 'Username is required'
       }
-      
-      setErrors(newErrors)
-      return Object.keys(newErrors).length === 0
+      return { isValid: Object.keys(newErrors).length === 0, errors: newErrors }
     }
 
-    const newErrors = {}
-    const sanitizedUsername = sanitizeInput(username)
-
+    // Production validation rules
     if (!sanitizedUsername) {
       newErrors.username = 'Username is required'
     } else if (!/^[a-zA-Z0-9._-]+$/.test(sanitizedUsername)) {
       newErrors.username = 'Username can only contain letters, numbers, dots, hyphens, and underscores'
+    } else if (sanitizedUsername.length > 64) {
+      newErrors.username = 'Username is maximum of 64 characters only'
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return { isValid: Object.keys(newErrors).length === 0, errors: newErrors }
   }
 
-  const validateMpin = () => {
+  const validateMpin = (mpinToValidate) => {
+    const newErrors = {}
+    
     // Demo: Simplified validation for testing frontend design/UX
     const EASY_TESTING = true; // Set to false for real validation
     
     if (EASY_TESTING) {
       // Demo: Allow any 6-digit MPIN for testing
-      const newErrors = {}
-
-      if (!mpin) {
+      if (!mpinToValidate) {
         newErrors.mpin = 'MPIN is required'
-      } else if (mpin.length !== 6) {
+      } else if (mpinToValidate.length !== 6) {
         newErrors.mpin = 'MPIN must be 6 digits'
-      } else if (!/^\d{6}$/.test(mpin)) {
+      } else if (!/^\d{6}$/.test(mpinToValidate)) {
         newErrors.mpin = 'MPIN must contain only numbers'
       }
-
-      setErrors(newErrors)
-      return Object.keys(newErrors).length === 0
+      return { isValid: Object.keys(newErrors).length === 0, errors: newErrors }
     }
 
-    const newErrors = {}
-
-    if (!mpin) {
+    // Production validation rules
+    if (!mpinToValidate) {
       newErrors.mpin = 'MPIN is required'
-    } else if (mpin.length !== 6) {
+    } else if (mpinToValidate.length !== 6) {
       newErrors.mpin = 'MPIN must be 6 digits'
-    } else if (!/^\d{6}$/.test(mpin)) {
+    } else if (!/^\d{6}$/.test(mpinToValidate)) {
       newErrors.mpin = 'MPIN must contain only numbers'
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return { isValid: Object.keys(newErrors).length === 0, errors: newErrors }
   }
 
-  const handleUsernameSubmit = async (e) => {
-    e.preventDefault()
+  // ============================================
+  // AUTHENTICATION HANDLERS
+  // ============================================
+  const handleUsernameSubmit = (submittedUsername) => {
+    // Update username state with submitted value
+    setUsername(submittedUsername)
     
-    if (!validateUsername()) {
+    // Validate the submitted username
+    const validation = validateUsername(submittedUsername)
+    
+    if (!validation.isValid) {
+      // Set validation errors and show alert
+      setErrors(validation.errors)
+      handleAlert(validation.errors.username, 'error')
       return
     }
 
-    setIsLoading(true)
-    const sanitizedUsername = sanitizeInput(username)
-
-    try {
-      // Check if username exists in the system
-      const userExists = await auth.checkUsername(sanitizedUsername)
-      
-      if (!userExists.success) {
-        handleAlert(userExists.error || 'Username not found', 'error')
-        setIsLoading(false)
-        return
-      }
-
-      // Store user info and move to MPIN step
-      setUserInfo(userExists.user)
-      setCurrentStep('mpin')
-      setErrors({}) // Clear any previous errors
-      
-    } catch (error) {
-      handleAlert('Unable to verify username. Please try again.', 'error')
-    } finally {
-      setIsLoading(false)
-    }
+    // Clear validation errors and show keypad
+    setErrors({})
+    setShowKeypad(true)
   }
 
-  // Demo: Handle final login with username and MPIN
   const handleLogin = async ({ username, mpin }) => {
-    if (!validateMpin()) {
+    // Validate MPIN before proceeding
+    const mpinValidation = validateMpin(mpin)
+    
+    if (!mpinValidation.isValid) {
+      setErrors(mpinValidation.errors)
+      handleAlert(mpinValidation.errors.mpin, 'error')
       return
     }
 
@@ -167,15 +171,18 @@ export default function LoginPage() {
     }
   }
 
-  const handleBackToUsername = () => {
-    // Demo: Add smooth transition back to username step
-    setCurrentStep('username')
+  // ============================================
+  // NAVIGATION HANDLERS
+  // ============================================
+  const handleKeypadClose = () => {
+    setShowKeypad(false)
     setMpin('')
-    setUserInfo(null)
-    setErrors({})
+    setErrors(prev => ({ ...prev, mpin: '' }))
   }
 
-  // Demo: MPIN keypad number handler
+  // ============================================
+  // MPIN KEYPAD HANDLERS
+  // ============================================
   const handleKeypadNumber = (number) => {
     if (mpin.length < 6) {
       setMpin(prev => prev + number)
@@ -183,28 +190,42 @@ export default function LoginPage() {
     }
   }
 
-  // Demo: MPIN backspace handler
   const handleKeypadBackspace = () => {
     setMpin(prev => prev.slice(0, -1))
     if (errors.mpin) setErrors(prev => ({ ...prev, mpin: '' }))
   }
 
+  // ============================================
+  // RENDER
+  // ============================================
   return (
     <>
       <ToastNotification ref={toastRef} />
       <PublicLayout hideBackgroundImage={showKeypad}>
         <LoginCard
+          // Input values
           username={username}
-          setUsername={setUsername}
           mpin={mpin}
-          errors={errors}
-          setErrors={setErrors}
-          isLoading={isLoading}
-          onLogin={handleLogin}
+          
+          // Input handlers
+          onUsernameChange={setUsername}
+          onUsernameSubmit={handleUsernameSubmit}
+          
+          // Keypad handlers
           onKeypadNumber={handleKeypadNumber}
           onKeypadBackspace={handleKeypadBackspace}
+          onKeypadClose={handleKeypadClose}
+          
+          // Login handler
+          onLogin={handleLogin}
+          
+          // UI state
           showKeypad={showKeypad}
-          setShowKeypad={setShowKeypad}
+          isLoading={isLoading}
+          errors={errors}
+          
+          // Demo data
+          demoCredentials={demoCredentials}
         />
       </PublicLayout>
     </>

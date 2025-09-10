@@ -1,31 +1,39 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import MPINKeypad from './MPINKeypad'
-import Spinner from './Spinner'
-import Modal from './Modal'
-import ToastNotification from './ToastNotification'
+import { useState, useEffect } from 'react'
+import MPINKeypad from '../common/MPINKeypad'
+import Spinner from '../common/Spinner'
+import Modal from '../common/Modal'
 
 export default function LoginCard({
+  // Input values
   username,
-  setUsername,
   mpin,
-  errors,
-  setErrors,
-  isLoading,
-  onLogin,
+  
+  // Input handlers 
+  onUsernameChange,
+  onUsernameSubmit,
+  
+  // Keypad handlers
   onKeypadNumber,
   onKeypadBackspace,
+  onKeypadClose,
+  
+  // Login handler
+  onLogin,
+  
+  // UI state
+  showKeypad,
+  isLoading,
+  errors,
+  
+  // Optional props
   showLogo = false,
   className = '',
-  showKeypad,
-  setShowKeypad
+  demoCredentials = [] // Add demo credentials prop
 }) {
+  // Only UI-specific state
   const [showForgotModal, setShowForgotModal] = useState(false)
-  const toastRef = useRef()
-
-  // Valid usernames for testing
-  const validUsernames = ['admin.staff', 'juan.delacruz', 'maria.santos']
 
   // Clear MPIN when keypad is toggled off
   useEffect(() => {
@@ -37,10 +45,6 @@ export default function LoginCard({
       }
     }
   }, [showKeypad])
-
-  const validateUsername = (username) => {
-    return validUsernames.includes(username.toLowerCase())
-  }
 
   const handleMPINLogin = () => {
     if (!username.trim()) {
@@ -62,7 +66,7 @@ export default function LoginCard({
         if (showKeypad) {
           event.preventDefault()
           event.stopPropagation()
-          setShowKeypad(false)
+          onKeypadClose()
         }
         return
       }
@@ -72,16 +76,10 @@ export default function LoginCard({
           // If keypad is not shown and username is entered, validate and show keypad
           event.preventDefault()
           
-          // Validate username
-          if (!validateUsername(username.trim())) {
-            setErrors(prev => ({ ...prev, username: 'Invalid username' }))
-            toastRef.current?.show(`Username "${username}" is not valid. Try: admin.staff`, 'error')
-            return
+          // Use parent validation instead of local validation
+          if (onUsernameSubmit) {
+            onUsernameSubmit(username.trim())
           }
-          
-          // Clear any previous errors
-          setErrors(prev => ({ ...prev, username: '' }))
-          setShowKeypad(true)
         } else if (showKeypad && mpin.length === 6) {
           // If keypad is shown and MPIN is complete, trigger login
           event.preventDefault()
@@ -134,7 +132,7 @@ export default function LoginCard({
             if (showKeypad && window.innerWidth >= 1024) {
               e.preventDefault()
               e.stopPropagation()
-              setShowKeypad(false)
+              onKeypadClose()
             }
           }}
         >
@@ -152,13 +150,15 @@ export default function LoginCard({
         {/* Single Page Login Form */}
         <div className="h-full flex flex-col">
           {/* DEMO: Demo Credentials - Show when keypad is not active */}
-          {!showKeypad && (
+          {!showKeypad && demoCredentials.length > 0 && (
             <div className="mb-4 p-3 bg-blue-50 border-dashed border border-blue-200 rounded-md">
               <h4 className="text-sm font-medium text-blue-800 mb-2">Demo Credentials:</h4>
               <div className="text-xs text-blue-700 space-y-1">
-                <div><strong>User:</strong> juan.delacruz / 031590</div>
-                <div><strong>User:</strong> maria.santos / 120885</div>
-                <div><strong>Admin:</strong> admin.staff / 010180</div>
+                {demoCredentials.map((cred, index) => (
+                  <div key={index}>
+                    <strong>{cred.role}:</strong> {cred.username} / {cred.mpin}
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -186,8 +186,7 @@ export default function LoginCard({
                     type="text"
                     value={username}
                     onChange={(e) => {
-                      setUsername(e.target.value)
-                      if (errors.username) setErrors(prev => ({ ...prev, username: '' }))
+                      onUsernameChange(e.target.value)
                     }}
                     onFocus={(e) => {
                       // Prevent zoom on mobile while allowing keyboard to overlay
@@ -227,24 +226,11 @@ export default function LoginCard({
                 type="button"
                 onClick={() => {
                   if (!username.trim()) {
-                    setErrors(prev => ({ ...prev, username: 'Username is required' }))
-                    toastRef.current?.show('Please enter your username', 'error')
-                    return
+                    return // Let parent handle validation
                   }
                   
-                  // Validate username
-                  if (!validateUsername(username.trim())) {
-                    setErrors(prev => ({ ...prev, username: 'Invalid username' }))
-                    toastRef.current?.show(`Username "${username}" is not valid. Try: admin.staff`, 'error')
-                    return
-                  }
-                  
-                  // Clear any previous errors
-                  setErrors(prev => ({ ...prev, username: '' }))
-                  
-                  // Remove focus from username field
-                  document.getElementById('username')?.blur()
-                  setShowKeypad(true)
+                  // Use parent validation handler
+                  onUsernameSubmit(username.trim())
                 }}
                 disabled={isLoading || !username.trim()}
                 className={`w-24 h-24 sm:w-20 sm:h-20 lg:w-22 lg:h-22 rounded-xl shadow-lg 
@@ -337,7 +323,7 @@ export default function LoginCard({
         >
           <div className="h-full w-full bg-gray-200 backdrop-blur-sm rounded-b-lg flex flex-col">
             {/* Top handle indicator */}
-            <div className="flex justify-center pt-2 cursor-pointer" onClick={() => setShowKeypad(false)}>
+            <div className="flex justify-center pt-2 cursor-pointer" onClick={() => onKeypadClose()}>
               <div className="w-10 h-1 bg-gray-400 rounded-full hover:bg-gray-400 active:bg-gray-400 transition-colors duration-200"></div>
             </div>
             {/* Keypad content */}
@@ -347,7 +333,7 @@ export default function LoginCard({
                     mpin={mpin}
                     onNumberPress={onKeypadNumber}
                     onBackspace={onKeypadBackspace}
-                    onBack={() => setShowKeypad(false)}
+                    onBack={() => onKeypadClose()}
                     errors={errors}
                     isLoading={isLoading}
                     showKeypad={true}
@@ -366,7 +352,7 @@ export default function LoginCard({
         onClick={(e) => {
           // Close keypad if clicking outside the keypad content
           if (e.target === e.currentTarget) {
-            setShowKeypad(false)
+            onKeypadClose()
           }
         }}
       >
@@ -380,7 +366,7 @@ export default function LoginCard({
           {/* iOS-style separator handle - clickable to close keypad */}
           <div 
             className="flex justify-center -mt-5 mb-1 cursor-pointer py-2"
-            onClick={() => setShowKeypad(false)}
+            onClick={() => onKeypadClose()}
           >
             <div className="w-15 h-1 bg-gray-400 rounded-full hover:bg-gray-500 transition-colors duration-200"></div>
           </div>
@@ -391,7 +377,7 @@ export default function LoginCard({
               mpin={mpin}
               onNumberPress={onKeypadNumber}
               onBackspace={onKeypadBackspace}
-              onBack={() => setShowKeypad(false)}
+              onBack={() => onKeypadClose()}
               errors={errors}
               isLoading={isLoading}
               showKeypad={true}
@@ -408,13 +394,11 @@ export default function LoginCard({
         type="alert"
       >
         <p className="text-gray-600">
-          Please visit Barangay LIAS office directly for assistance with account recovery.
-          Bring a valid ID for verification.
+          Please visit Barangay LIAS office for assistance. Bring a valid ID for verification.
         </p>
       </Modal>
 
       {/* Toast Notification */}
-      <ToastNotification ref={toastRef} />
     </>
   )
 }

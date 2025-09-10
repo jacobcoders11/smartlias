@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import ToastNotification from '../../components/common/ToastNotification'
-import PublicLayout from '../../components/landing/PublicLayout'
-import ChangeMPINCard from '../../components/landing/ChangeMPINCard'
+import PublicLayout from '../../components/public/PublicLayout'
+import ChangeMPINCard from '../../components/public/ChangeMPINCard'
 import PageLoading from '../../components/common/PageLoading'
 
 export default function ChangeMPINPage() {

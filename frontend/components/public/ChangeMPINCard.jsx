@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import MPINKeypad from './MPINKeypad'
-import ToastNotification from './ToastNotification'
+import MPINKeypad from '../common/MPINKeypad'
+import ToastNotification from '../common/ToastNotification'
 import Link from 'next/link'
 
 export default function ChangeMPINCard({
