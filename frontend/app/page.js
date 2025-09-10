@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import PageLoading from '../components/PageLoading'
+import PageLoading from '../components/common/PageLoading'
 import { auth, ROLE_TYPES } from '../lib/auth'
 
 export default function HomePage() {

@@ -2,9 +2,9 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import ToastNotification from '../../components/ToastNotification'
-import PublicLayout from '../../components/PublicLayout'
-import LoginCard from '../../components/LoginCard'
+import ToastNotification from '../../components/common/ToastNotification'
+import PublicLayout from '../../components/landing/PublicLayout'
+import LoginCard from '../../components/landing/LoginCard'
 import { auth } from '../../lib/auth'
 
 export default function LoginPage() {
