@@ -6,8 +6,9 @@ import ToastNotification from '../../components/common/ToastNotification'
 import PublicLayout from '../../components/public/PublicLayout'
 import ChangeMPINCard from '../../components/public/ChangeMPINCard'
 import PageLoading from '../../components/common/PageLoading'
+import ApiClient from '../../lib/api'
 
-export default function ChangeMPINPage() {
+export default function ChangePINPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const toastRef = useRef()
@@ -100,20 +101,19 @@ export default function ChangeMPINPage() {
   // ==================== API READY FUNCTIONS ====================
   const submitNewMPIN = async (pin) => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/change-mpin', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ newPin: pin, token: searchParams.get('token') })
-      // })
+      const token = searchParams.get('token')
       
-      // Demo: Simulate API call - DELETE THIS
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Call the API to change password
+      const result = await ApiClient.changePassword(token, pin)
       
-      return { success: true }
+      if (result.success) {
+        return { success: true, message: result.message || 'Password changed successfully' }
+      } else {
+        return { success: false, error: result.error || 'Failed to change password' }
+      }
     } catch (error) {
       console.error('API Error:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: 'Network error. Please try again.' }
     }
   }
 

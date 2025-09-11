@@ -21,9 +21,9 @@ useImperativeHandle(ref, () => ({
     })
     
     // Auto hide after 5 seconds
-    // setTimeout(() => {
-    //   setToasts(prev => prev.filter(toast => toast.id !== newToast.id))
-    // }, 5000)
+    setTimeout(() => {
+      setToasts(prev => prev.filter(toast => toast.id !== newToast.id))
+    }, 5000)
   }
 }))
 
@@ -48,12 +48,12 @@ useImperativeHandle(ref, () => ({
     })
   }
 
-  const truncateMessage = (message, maxLength = 64) => {
+  const truncateMessage = (message, maxLength = 80) => {
     if (message.length <= maxLength) return message
     return message.substring(0, maxLength) + '...'
   }
 
-  const isMessageTruncated = (message, maxLength = 64) => {
+  const isMessageTruncated = (message, maxLength = 80) => {
     return message.length > maxLength
   }
 
@@ -115,7 +115,7 @@ useImperativeHandle(ref, () => ({
         return (
           <div 
             key={toast.id}
-            className={`flex items-center w-full lg:w-90 p-3 px-2 rounded-xl ${getBackgroundClass(toast.type)} ${getBorderClass(toast.type)} ${getShadowClass(toast.type)} transform transition-all duration-300 ease-in-out animate-in slide-in-from-right-2 fade-in relative overflow-hidden`} 
+            className={`flex items-center w-full lg:w-90 p-2 px-2 rounded-xl ${getBackgroundClass(toast.type)} ${getBorderClass(toast.type)} ${getShadowClass(toast.type)} transform transition-all duration-300 ease-in-out animate-in slide-in-from-right-2 fade-in relative overflow-hidden`} 
             role="alert"
             style={{ 
               animationDelay: `${index * 100}ms`,

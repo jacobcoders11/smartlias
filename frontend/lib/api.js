@@ -27,9 +27,14 @@ class ApiClient {
    * Login user - routes to appropriate auth service
    */
   static async login(username, password) {
+    console.log('ApiClient.login - USE_MOCK_DATA:', this.config.USE_MOCK_DATA)
+    console.log('ApiClient.login - Environment variable:', process.env.NEXT_PUBLIC_USE_MOCK_DATA)
+    
     if (this.config.USE_MOCK_DATA) {
+      console.log('Using AuthMock.login')
       return AuthMock.login(username, password)
     } else {
+      console.log('Using AuthService.login')
       return AuthService.login(username, password)
     }
   }
@@ -57,6 +62,17 @@ class ApiClient {
   }
 
   /**
+   * Change password - routes to appropriate auth service
+   */
+  static async changePassword(token, newPin) {
+    if (this.config.USE_MOCK_DATA) {
+      return AuthMock.changePassword(token, newPin)
+    } else {
+      return AuthService.changePassword(token, newPin)
+    }
+  }
+
+  /**
    * Get current session - routes to appropriate auth service
    */
   static async getSession() {
@@ -64,6 +80,28 @@ class ApiClient {
       return AuthMock.getSession()
     } else {
       return AuthService.getSession()
+    }
+  }
+
+  /**
+   * Get account security status - routes to appropriate auth service
+   */
+  static async getAccountStatus(username) {
+    if (this.config.USE_MOCK_DATA) {
+      return AuthMock.getAccountStatus(username)
+    } else {
+      return AuthService.getAccountStatus(username)
+    }
+  }
+
+  /**
+   * Unlock account - routes to appropriate auth service
+   */
+  static async unlockAccount(username) {
+    if (this.config.USE_MOCK_DATA) {
+      return AuthMock.unlockAccount(username)
+    } else {
+      return AuthService.unlockAccount(username)
     }
   }
 

@@ -10,12 +10,15 @@ class AuthService {
   
   // Configuration for real backend
   static config = {
-    BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+    BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000/api',
     ENDPOINTS: {
       LOGIN: '/auth/login',
       LOGOUT: '/auth/logout',
       CHECK_USERNAME: '/auth/check-username',
-      GET_SESSION: '/auth/session'
+      GET_SESSION: '/auth/session',
+      CHANGE_PASSWORD: '/auth/change-password',
+      ACCOUNT_STATUS: '/auth/account-status',
+      UNLOCK_ACCOUNT: '/auth/unlock-account'
     }
   }
 
@@ -136,6 +139,25 @@ class AuthService {
   }
 
   /**
+   * Change user password/MPIN
+   */
+  static async changePassword(token, newPin) {
+    try {
+      const result = await this.makeRequest(this.config.ENDPOINTS.CHANGE_PASSWORD, {
+        method: 'POST',
+        body: JSON.stringify({ token, newPin })
+      })
+
+      return result
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Failed to change password. Please try again.'
+      }
+    }
+  }
+
+  /**
    * Get current user session
    */
   static async getSession() {
@@ -159,6 +181,37 @@ class AuthService {
       return {
         success: false,
         error: 'Session validation failed'
+      }
+    }
+  }
+
+  /**
+   * Get account security status
+   */
+  static async getAccountStatus(username) {
+    try {
+      return await this.makeRequest(`${this.config.ENDPOINTS.ACCOUNT_STATUS}?username=${encodeURIComponent(username)}`)
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Failed to get account status'
+      }
+    }
+  }
+
+  /**
+   * Unlock user account (admin function)
+   */
+  static async unlockAccount(username) {
+    try {
+      return await this.makeRequest(this.config.ENDPOINTS.UNLOCK_ACCOUNT, {
+        method: 'POST',
+        body: JSON.stringify({ username })
+      })
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Failed to unlock account'
       }
     }
   }
