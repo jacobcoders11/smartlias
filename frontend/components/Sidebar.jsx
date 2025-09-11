@@ -67,7 +67,7 @@ export default function Sidebar({ role = 'user', collapsed, setCollapsed }) {
       { name: 'Dashboard', href: '/admin', icon: 'bi-speedometer2' },
       { name: 'Residents', href: '/admin/residents', icon: 'bi-people' },
       { name: 'Documents', href: '/admin/documents', icon: 'bi-file-earmark-text' },
-      { name: 'Reports', href: '/admin/reports', icon: 'bi-graph-up' },
+      { name: 'Messaging', href: '/admin/messaging', icon: 'bi-chat' },
       { name: 'Settings', href: '/admin/settings', icon: 'bi-gear' },
     ],
   }
