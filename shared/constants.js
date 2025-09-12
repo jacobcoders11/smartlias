@@ -125,51 +125,6 @@ const TIMEZONE = {
 }
 
 // ==========================================================================
-// APPLICATION CONFIGURATION
-// ==========================================================================
-
-const APP_CONFIG = {
-  // Application Information
-  NAME: 'Smart LIAS',
-  VERSION: '1.0.0',
-  DESCRIPTION: 'Digital Barangay Management System',
-  
-  // API Configuration
-  API: {
-    BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000/api',
-    TIMEOUT: 10000, // 10 seconds
-  },
-
-  // Development Origins - allowed domains for development
-  ALLOWED_DEV_ORIGINS: [
-    'http://localhost:3000',      // Next.js dev server
-    'http://127.0.0.1:3000',      // Alternative localhost
-    'http://0.0.0.0:3000',        // Docker/network access
-    'http://192.168.1.3:3000',  // Local network (adjust IP as needed)
-    'http://10.0.0.100:3000',     // Alternative local network
-  ],
-
-  // Production Origins - allowed domains for production
-  ALLOWED_PROD_ORIGINS: [
-    'https://smartlias.vercel.app',
-    'https://smartlias.netlify.app', 
-    'https://yourdomain.com',
-    // Add your production domains here
-  ],
-
-  // Environment Detection
-  IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
-  IS_PRODUCTION: process.env.NODE_ENV === 'production',
-
-  // Feature Flags
-  FEATURES: {
-    USE_MOCK_DATA: process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true',
-    ENABLE_LOGGING: process.env.NODE_ENV === 'development',
-    ENABLE_DEBUG: process.env.NEXT_PUBLIC_DEBUG === 'true',
-  },
-}
-
-// ==========================================================================
 // UTILITY FUNCTIONS
 // ==========================================================================
 
@@ -313,40 +268,6 @@ function createErrorPageUrl() {
   return '/' // Just redirect to login page
 }
 
-// Get allowed origins based on environment
-function getAllowedOrigins() {
-  if (APP_CONFIG.IS_DEVELOPMENT) {
-    return APP_CONFIG.ALLOWED_DEV_ORIGINS
-  }
-  return APP_CONFIG.ALLOWED_PROD_ORIGINS
-}
-
-// Check if current origin is allowed (frontend only)
-function isOriginAllowed(origin) {
-  if (typeof window === 'undefined') return true // Server-side always allowed
-  const currentOrigin = origin || window?.location?.origin
-  const allowedOrigins = getAllowedOrigins()
-  return allowedOrigins.includes(currentOrigin)
-}
-
-// Get current environment
-function getEnvironment() {
-  return {
-    isDevelopment: APP_CONFIG.IS_DEVELOPMENT,
-    isProduction: APP_CONFIG.IS_PRODUCTION,
-    nodeEnv: process.env.NODE_ENV,
-  }
-}
-
-// Log allowed origins for debugging (frontend only)
-function logAllowedOrigins() {
-  if (typeof window !== 'undefined' && APP_CONFIG.FEATURES.ENABLE_LOGGING) {
-    console.log('🌐 Allowed Origins:', getAllowedOrigins())
-    console.log('📍 Current Origin:', window?.location?.origin)
-    console.log('✅ Origin Allowed:', isOriginAllowed())
-  }
-}
-
 // ==========================================================================
 // EXPORTS (Both CommonJS and ES6 compatible)
 // ==========================================================================
@@ -370,9 +291,6 @@ const constants = {
   // Timezone constants
   TIMEZONE,
   
-  // Application configuration
-  APP_CONFIG,
-  
   // Utility functions
   generateUsernameFromName,
   cleanNameForUsername,
@@ -390,11 +308,7 @@ const constants = {
   shouldLockAccount,
   getLockoutEndTime,
   shouldResetAttempts,
-  createErrorPageUrl,
-  getAllowedOrigins,
-  isOriginAllowed,
-  getEnvironment,
-  logAllowedOrigins
+  createErrorPageUrl
 }
 
 // Export for both CommonJS (Node.js/Backend) and ES6 (Frontend)
@@ -423,7 +337,6 @@ export {
   FIELD_ERRORS,
   HTTP_STATUS_MESSAGES,
   TIMEZONE,
-  APP_CONFIG,
   generateUsernameFromName,
   cleanNameForUsername,
   findAvailableUsername,
@@ -440,9 +353,5 @@ export {
   shouldLockAccount,
   getLockoutEndTime,
   shouldResetAttempts,
-  createErrorPageUrl,
-  getAllowedOrigins,
-  isOriginAllowed,
-  getEnvironment,
-  logAllowedOrigins
+  createErrorPageUrl
 }
