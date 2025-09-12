@@ -6,6 +6,8 @@ import ToastNotification from '../../components/common/ToastNotification'
 import PublicLayout from '../../components/public/PublicLayout'
 import LoginCard from '../../components/public/LoginCard'
 import ApiClient from '../../lib/apiClient'
+import { alertToast, sanitizeInput } from '../../lib/utility'
+import { AUTH_MESSAGES } from '@shared/constants'
 
 export default function LoginPage() {
 
@@ -19,46 +21,47 @@ export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [pin, setPin] = useState('')
   const [userInfo, setUserInfo] = useState(null) // Store user details after username validation
-  const [errors, setErrors] = useState({})
+  const [errors, setErrors] = useState({}) // Boolean flags for field error states
   const [showKeypad, setShowKeypad] = useState(false) // Track keypad state for PublicLayout
 
-  // ============================================
-  // UTILITY FUNCTIONS
-  // ============================================
-  const handleAlert = (message, type = 'info') => {
-    toastRef.current?.show(message, type)
-  }
-
-  const sanitizeInput = (input) => {
-    if (!input) return ''
-    
-    return input
-      .trim()
-      .replace(/[<>'"&]/g, '') // Remove potentially dangerous characters
-      .slice(0, 100) // Limit length
-  }
+  // Unified toast helper
+  const handleAlert = (message, type = 'info') => alertToast(toastRef, message, type)
 
   // ============================================
   // VALIDATION FUNCTIONS
   // ============================================
   
+  // Frontend-only validation (basic format checks)
+  const validateUsername = (value) => {
+    const sanitizedUsername = sanitizeInput(value)
+    
+    // Check each validation rule and return error message if fails
+    if (!sanitizedUsername) return AUTH_MESSAGES.USERNAME_REQUIRED
+    if (sanitizedUsername.length < 6) return AUTH_MESSAGES.USERNAME_TOO_SHORT
+    if (sanitizedUsername.length > 32) return AUTH_MESSAGES.USERNAME_TOO_LONG
+    if (!/^[a-z0-9_.]+$/.test(sanitizedUsername)) return AUTH_MESSAGES.USERNAME_INVALID_FORMAT
+    
+    // All validations passed
+    return null
+  }
+  
   const validatePin = (pinToValidate = pin) => {
-    const newErrors = {}
-
     if (!pinToValidate) {
-      newErrors.pin = 'PIN is required'
-    } else if (pinToValidate.length !== 6) {
-      newErrors.pin = 'PIN must be 6 digits'
-    } else if (!/^\d{6}$/.test(pinToValidate)) {
-      newErrors.pin = 'PIN must contain only numbers'
+      setErrors({ pin: true })
+      handleAlert(AUTH_MESSAGES.PIN_REQUIRED, 'error')
+      return false
+    } 
+    if (pinToValidate.length !== 6) {
+      setErrors({ pin: true })
+      handleAlert(AUTH_MESSAGES.PIN_INVALID_LENGTH, 'error')
+      return false
+    } 
+    if (!/^\d{6}$/.test(pinToValidate)) {
+      setErrors({ pin: true })
+      handleAlert(AUTH_MESSAGES.PIN_INVALID_FORMAT, 'error')
+      return false
     }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      handleAlert(newErrors.pin, 'error')
-    }
-
-    return Object.keys(newErrors).length === 0
+    return true
   }
 
   // ============================================
@@ -67,11 +70,11 @@ export default function LoginPage() {
   const handleUsernameSubmit = async (submittedUsername) => {
     setUsername(submittedUsername)
     
-    const sanitizedUsername = sanitizeInput(submittedUsername)
-    
-    if (!sanitizedUsername) {
-      setErrors({ username: 'Username is required' })
-      handleAlert('Username is required', 'error')
+    // Frontend validation first (immediate feedback)
+    const validationError = validateUsername(submittedUsername)
+    if (validationError !== null) {
+      setErrors({ username: true })
+      handleAlert(validationError, 'error')
       return
     }
     
@@ -79,27 +82,22 @@ export default function LoginPage() {
     setErrors({})
     
     try {
-      const userExists = await ApiClient.checkUser(sanitizedUsername)
+      const userExists = await ApiClient.checkUser(sanitizeInput(submittedUsername))
       
       if (!userExists.success) {
-        // Better error handling for different scenarios
-        let errorMessage = userExists.error || 'Unknown error occurred'
-        
         if (userExists.status === 404) {
-          errorMessage = 'Username not found'
-          // Set username field error for visual feedback
-          setErrors({ username: 'Username not found' })
-        } else if (userExists.status === 400) {
-          errorMessage = 'Invalid username format'
-          setErrors({ username: 'Invalid username format' })
-        } else if (errorMessage.includes('fetch')) {
-          errorMessage = 'Unable to connect to server. Please check your connection.'
-          setErrors({ username: 'Connection error' })
+          setErrors({ username: true })
+          handleAlert(AUTH_MESSAGES.USERNAME_NOT_FOUND, 'error')
+        } else if (userExists.status === 422) {
+          setErrors({ username: true })
+          handleAlert(AUTH_MESSAGES.USERNAME_VALIDATION_FAILED, 'error')
+        } else if ((userExists.error || '').includes('fetch')) {
+          setErrors({ username: true })
+          handleAlert(AUTH_MESSAGES.USERNAME_CONNECTION_ERROR, 'error')
         } else {
-          setErrors({ username: 'Username validation failed' })
+          setErrors({ username: true })
+          handleAlert(AUTH_MESSAGES.USERNAME_VALIDATION_FAILED, 'error')
         }
-        
-        handleAlert(errorMessage, 'error')
         setIsLoading(false)
         return
       }
@@ -110,7 +108,8 @@ export default function LoginPage() {
       setShowKeypad(true)
       
     } catch (error) {
-      handleAlert('Unable to validate username. Please try again.', 'error')
+      setErrors({ username: true })
+      handleAlert(AUTH_MESSAGES.VALIDATION_RETRY, 'error')
     } finally {
       setIsLoading(false)
     }
@@ -127,7 +126,7 @@ export default function LoginPage() {
       const result = await ApiClient.login(sanitizeInput(username), pin)
 
       if (!result.success) {
-        handleAlert(result.error, 'error')
+        handleAlert(result.error || AUTH_MESSAGES.LOGIN_FAILED, 'error')
         setIsLoading(false)
         return
       }
@@ -137,7 +136,7 @@ export default function LoginPage() {
       const redirectTo = result.data?.redirectTo || result.redirectTo
       
       const message = !user.passwordChanged 
-        ? 'Password change required. Redirecting…'
+        ? AUTH_MESSAGES.PIN_CHANGE_REQUIRED
         : `Welcome ${user.firstName}! Redirecting…`
       
       handleAlert(message, !user.passwordChanged ? 'info' : 'success')
@@ -147,7 +146,7 @@ export default function LoginPage() {
       }, 1500) // Increased delay to see the toast message
 
     } catch (error) {
-      handleAlert('Login failed. Please try again.', 'error')
+      handleAlert(AUTH_MESSAGES.LOGIN_FAILED, 'error')
       setIsLoading(false)
     }
   }
@@ -159,7 +158,7 @@ export default function LoginPage() {
     if (pin.length < 6) {
       const newPin = pin + number
       setPin(newPin)
-      if (errors.pin) setErrors(prev => ({ ...prev, pin: '' }))
+      if (errors.pin) setErrors(prev => ({ ...prev, pin: false }))
       
       // Auto-execute login when 6 digits are completed
       if (newPin.length === 6) {
@@ -172,7 +171,7 @@ export default function LoginPage() {
 
   const handleKeypadBackspace = () => {
     setPin(prev => prev.slice(0, -1))
-    if (errors.pin) setErrors(prev => ({ ...prev, pin: '' }))
+    if (errors.pin) setErrors(prev => ({ ...prev, pin: false }))
   }
 
   // ============================================

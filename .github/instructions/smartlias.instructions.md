@@ -242,7 +242,7 @@ const sanitizeInput = (input) => {
 // CORRECT: Environment-controlled data source
 const API_CONFIG = {
   USE_MOCK_DATA: process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || false,
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000/api'
 }
 ```
 
@@ -250,7 +250,7 @@ const API_CONFIG = {
 ```env
 # Development (.env.local)
 NEXT_PUBLIC_USE_MOCK_DATA=true    # Uses JSON files for development
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_API_URL=http://localhost:9000/api
 
 # Production (deployment environment)
 NEXT_PUBLIC_USE_MOCK_DATA=false   # Uses real backend API

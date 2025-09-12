@@ -77,7 +77,7 @@ class ApiClient {
       
       return {
         success: false,
-        error: error.message || 'Network error. Please check your connection.',
+        error: error.message || 'Network error. Please check your API connection.',
       }
     }
   }
