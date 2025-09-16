@@ -39,7 +39,7 @@ export default function Header({ title, role = 'user', userName = 'Juan Dela Cru
 
   return (
     <>
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white shadow-sm border-b border-gray-200 relative z-30">
         <div className="flex items-center justify-between px-6 py-4">
           <h1 className="text-2xl font-semibold text-gray-800">{computedTitle}</h1>
 

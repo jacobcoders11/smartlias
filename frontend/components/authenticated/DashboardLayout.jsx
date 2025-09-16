@@ -25,7 +25,7 @@ export default function DashboardLayout({
     <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
       <div className={`min-h-screen bg-gray-50 ${className}`}>
         {/* Sidebar: fixed full-height on the left */}
-        <aside className="z-20">
+        <aside className="z-30">
           {React.cloneElement(sidebar, { collapsed, setCollapsed })}
         </aside>
 

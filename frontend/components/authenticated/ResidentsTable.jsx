@@ -20,7 +20,6 @@ export default function ResidentsTable({
   const [statusFilter, setStatusFilter] = useState('active') // Default to 'active' status
   const [openDropdown, setOpenDropdown] = useState(null)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [selectedResidents, setSelectedResidents] = useState(new Set())
   const [hoveredFilter, setHoveredFilter] = useState(null) // Track which filter is being hovered
   
   // Filter values for additional filters
@@ -250,28 +249,6 @@ export default function ResidentsTable({
     else if (action === 'delete') onDelete?.(resident)
   }
 
-  // Checkbox handlers
-  const handleSelectAll = (checked) => {
-    if (checked) {
-      setSelectedResidents(new Set(currentData.map(resident => resident.id)))
-    } else {
-      setSelectedResidents(new Set())
-    }
-  }
-
-  const handleSelectResident = (residentId, checked) => {
-    const newSelected = new Set(selectedResidents)
-    if (checked) {
-      newSelected.add(residentId)
-    } else {
-      newSelected.delete(residentId)
-    }
-    setSelectedResidents(newSelected)
-  }
-
-  const isAllSelected = currentData.length > 0 && currentData.every(resident => selectedResidents.has(resident.id))
-  const isSomeSelected = currentData.some(resident => selectedResidents.has(resident.id))
-
   // Fixed table height - calculate based on viewport for maximum space utilization
   // Approximately 60vh allows for ~20-25 rows on most screens while keeping fixed row height
   const FIXED_ROWS_COUNT = 20
@@ -288,10 +265,7 @@ export default function ResidentsTable({
     
     for (let i = 0; i < emptyRowsCount; i++) {
       emptyRows.push(
-        <tr key={`empty-${i}`} className="bg-gray-50 divide-x divide-gray-200">
-          <td className="w-10 px-2 py-1">
-            <div className="h-6"></div>
-          </td>
+        <tr key={`empty-${i}`} className="bg-gray-300 divide-x divide-gray-200">
           <td className="px-2 py-1 whitespace-nowrap">
             <div className="h-6"></div>
           </td>
@@ -420,7 +394,7 @@ export default function ResidentsTable({
             </button>
             
             {openDropdown === 'perPage' && (
-              <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+              <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-[8]">
                 <div className="py-1">
                   {[25, 50, 100].map((value) => (
                     <button
@@ -446,7 +420,7 @@ export default function ResidentsTable({
 
         {/* Search Field */}
         <div className="pr-16 mb-2">
-          <div className="relative max-w-md">
+          <div className="relative max-w-lg">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <i className="bi bi-search text-gray-400"></i>
             </div>
@@ -481,7 +455,7 @@ export default function ResidentsTable({
               </button>
               
               {openDropdown === 'statusFilter' && (
-                <div className="absolute left-0 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 z-20">
+                <div className="absolute left-0 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 z-[8]">
                   <div className="py-1">
                     {/* Any Status Option */}
                     <button
@@ -590,7 +564,7 @@ export default function ResidentsTable({
                   </button>
                   
                   {openDropdown === filterKey && (
-                    <div className="absolute left-0 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 z-20">
+                    <div className="absolute left-0 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 z-[8]">
                       <div className="py-1">
                         {filter.options.map((option) => (
                           <button
@@ -673,13 +647,8 @@ export default function ResidentsTable({
             className="table-container overflow-auto min-h-[calc(100vh-320px)] max-h-[calc(100vh-320px)]"
           >
             <table className="min-w-full h-full divide-y divide-gray-200 divide-x divide-gray-200">
-              <thead className="bg-gray-100 sticky top-0 z-10 border-b border-gray-200">
+              <thead className="bg-gray-100 sticky top-0 z-[5] border-b border-gray-200">
                 <tr className="divide-x divide-gray-200">
-                  <th className="w-12 px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center justify-center">
-                      <div className="w-4 h-4 bg-gray-300 rounded animate-pulse"></div>
-                    </div>
-                  </th>
                   <th className="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <div className="w-16 h-3 bg-gray-200 rounded animate-pulse"></div>
                   </th>
@@ -703,11 +672,6 @@ export default function ResidentsTable({
                   <tr key={`skeleton-${index}`} className={`divide-x divide-gray-200 ${
                     index % 2 === 0 ? 'bg-white' : 'bg-gray-25'
                   }`}>
-                    <td className="w-12 px-3 py-1">
-                      <div className="flex items-center justify-center">
-                        <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
-                      </div>
-                    </td>
                     <td className="px-3 py-1 whitespace-nowrap">
                       <div className="space-y-1">
                         <div className="w-32 h-3 bg-gray-200 rounded animate-pulse"></div>
@@ -750,21 +714,10 @@ export default function ResidentsTable({
           </div>
         ) : (
           <div className="overflow-hidden">
-            <div className="table-container overflow-auto min-h-[calc(100vh-320px)] max-h-[calc(100vh-320px)]">
-              <table className="w-full">
-                <thead className={`bg-gray-100 sticky top-0 z-10 ${isScrolled ? 'shadow-sm' : ''}`}>
+            <div className="table-container overflow-auto min-h-[calc(100vh-320px)] max-h-[calc(100vh-320px)] bg-gray-50">
+              <table className="w-full bg-white">
+                <thead className={`bg-gray-100 sticky top-0 z-[5] ${isScrolled ? 'shadow-sm' : ''}`}>
                   <tr>
-                    <th className="w-12 px-3 py-2">
-                      <input
-                        type="checkbox"
-                        checked={isAllSelected}
-                        ref={(el) => {
-                          if (el) el.indeterminate = isSomeSelected && !isAllSelected
-                        }}
-                        onChange={(e) => handleSelectAll(e.target.checked)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer"
-                      />
-                    </th>
                     <th 
                       onClick={() => handleSort('name')}
                       className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors"
@@ -796,37 +749,25 @@ export default function ResidentsTable({
                     <tr 
                       key={resident.id} 
                       onClick={(e) => {
-                        // Don't trigger row click if clicking on checkbox
-                        if (e.target.type !== 'checkbox') {
-                          onView?.(resident);
-                        }
+                        onView?.(resident);
                       }}
                       className={`hover:bg-gray-50 transition-colors cursor-pointer divide-x divide-gray-200 ${
                         index % 2 === 0 ? 'bg-white' : 'bg-gray-25'
+                      } ${
+                        index === currentData.length - 1 ? 'shadow-sm' : ''
                       }`}
                     >
-                      <td className="w-10 px-3 py-1">
-                        <input
-                          type="checkbox"
-                          checked={selectedResidents.has(resident.id)}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            handleSelectResident(resident.id, e.target.checked);
-                          }}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-1"
-                        />
-                      </td>
                       <td className="px-3 py-1 whitespace-nowrap">
-                        <span className="text-sm font-semibold tracking-normal antialiased text-gray-900">{resident.name}</span>
+                        <span className="text-xs font-semibold tracking-normal antialiased text-gray-900">{resident.name}</span>
                         <span className="text-xs font-medium tracking-normal antialiased text-gray-500 ml-2">ID: {resident.id}</span>
                       </td>
                       <td className="px-3 py-1">
-                        <span className="text-sm font-medium tracking-normal antialiased text-gray-900 max-w-xs truncate" title={resident.address}>
+                        <span className="text-xs font-medium tracking-normal antialiased text-gray-900 max-w-xs truncate" title={resident.address}>
                           {resident.address}
                         </span>
                       </td>
                       <td className="px-3 py-1 whitespace-nowrap">
-                        <span className="text-sm font-medium tracking-normal antialiased text-gray-900">{resident.phone}</span>
+                        <span className="text-xs font-medium tracking-normal antialiased text-gray-900">{resident.phone}</span>
                         <span className="text-xs font-medium tracking-normal antialiased text-gray-500 ml-2 truncate max-w-xs" title={resident.email}>
                           {resident.email}
                         </span>
@@ -857,7 +798,7 @@ export default function ResidentsTable({
                           </button>
                           
                           {openDropdown === resident.id && (
-                            <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                            <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-[8]">
                               <div className="py-1">
                                 <button 
                                   onClick={() => handleAction('view', resident)}
@@ -889,15 +830,8 @@ export default function ResidentsTable({
                   ))}
                 </tbody>
                 </table>
-                
-                {/* Plain gray fill for remaining space */}
-                {currentData.length < FIXED_ROWS_COUNT && (
-                  <div className="w-full bg-gray-50" style={{ 
-                    height: `calc(100% - ${32 + (currentData.length * 32)}px)` 
-                  }}></div>
-                )}
-              </div>
             </div>
+          </div>
         )}
       </div>
 

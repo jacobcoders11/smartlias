@@ -75,7 +75,7 @@ export default function Sidebar({ role = 'user', collapsed, setCollapsed }) {
   const items = menus[role] || menus.user
 
   return (
-    <div className={`fixed inset-y-0 left-0 bg-green-700 text-white transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20 shadow-[6px_0_12px_-2px_rgba(0,0,0,0.25),_3px_0_20px_-4px_rgba(0,0,0,0.15)]' : 'w-64 shadow-lg'}`} aria-label={`${role} navigation`}>
+    <div className={`fixed inset-y-0 left-0 bg-green-700 text-white transition-all duration-300 ease-in-out z-30 ${isCollapsed ? 'w-20 shadow-[6px_0_12px_-2px_rgba(0,0,0,0.25),_3px_0_20px_-4px_rgba(0,0,0,0.15)]' : 'w-64 shadow-lg'}`} aria-label={`${role} navigation`}>
       {/* Header */}
       <div className="p-4 border-b border-green-700/30 transition-all duration-300 ease-in-out">
         <div className="flex items-center transition-all duration-300 ease-in-out">
