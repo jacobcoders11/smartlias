@@ -14,7 +14,7 @@ export default function ResidentsTable({
 }) {
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(25)
-  const [sortField, setSortField] = useState('name')
+  const [sortField, setSortField] = useState('first_name')
   const [sortDirection, setSortDirection] = useState('asc')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('active') // Default to 'active' status
@@ -22,11 +22,22 @@ export default function ResidentsTable({
   const [isScrolled, setIsScrolled] = useState(false)
   const [hoveredFilter, setHoveredFilter] = useState(null) // Track which filter is being hovered
   
-  // Filter values for additional filters
+    // Filter values for additional filters
+  const [purokFilter, setPurokFilter] = useState('all')
+  const [genderFilter, setGenderFilter] = useState('all')
+  const [ageRangeFilter, setAgeRangeFilter] = useState('all')
+  const [civilStatusFilter, setCivilStatusFilter] = useState('all')
   const [householdRoleFilter, setHouseholdRoleFilter] = useState('all')
   const [ageGroupFilter, setAgeGroupFilter] = useState('all')
-  const [civilStatusFilter, setCivilStatusFilter] = useState('all')
   const [specialCategoryFilter, setSpecialCategoryFilter] = useState('all')
+
+  // Helper function to display "-" for empty values
+  const displayValue = (value, fallback = '-') => {
+    if (value === null || value === undefined || value === '' || value === 0) {
+      return fallback;
+    }
+    return value;
+  };
   
   // Check if any filters are active (excluding default 'active' status)
   const isAnyFilterActive = searchQuery !== '' || 
@@ -65,18 +76,21 @@ export default function ResidentsTable({
   }, [])  // Filter and sort data
   const filteredAndSortedData = useMemo(() => {
     let filtered = residents.filter(resident => {
+      const fullName = `${resident.first_name || ''} ${resident.last_name || ''}`.trim()
       const matchesSearch = searchQuery === '' || 
-        resident.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        resident.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        resident.phone.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        resident.email.toLowerCase().includes(searchQuery.toLowerCase())
+        fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (resident.first_name && resident.first_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (resident.last_name && resident.last_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (resident.address && resident.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (resident.contact_number && resident.contact_number.toLowerCase().includes(searchQuery.toLowerCase()))
       
       const matchesStatus = statusFilter === 'all' || 
-        resident.status.toLowerCase() === statusFilter.toLowerCase()
+        (statusFilter === 'active' && resident.status === 1) ||
+        (statusFilter === 'inactive' && resident.status === 0)
       
       // Household Role Filter
       const matchesHouseholdRole = householdRoleFilter === 'all' || 
-        (resident.householdRole && resident.householdRole.toLowerCase() === householdRoleFilter.toLowerCase())
+        (resident.family_relationship && resident.family_relationship.toLowerCase() === householdRoleFilter.toLowerCase())
       
       // Age Group Filter
       const matchesAgeGroup = ageGroupFilter === 'all' || (() => {
@@ -92,13 +106,13 @@ export default function ResidentsTable({
       
       // Civil Status Filter
       const matchesCivilStatus = civilStatusFilter === 'all' || 
-        (resident.civilStatus && resident.civilStatus.toLowerCase() === civilStatusFilter.toLowerCase())
+        (resident.civil_status && resident.civil_status.toLowerCase() === civilStatusFilter.toLowerCase())
       
       // Special Category Filter
       const matchesSpecialCategory = specialCategoryFilter === 'all' || (() => {
         if (!resident.specialCategories) return false
         const categories = Array.isArray(resident.specialCategories) ? resident.specialCategories : [resident.specialCategories]
-        return categories.some(category => category.toLowerCase() === specialCategoryFilter.toLowerCase())
+        return categories.some(category => category && typeof category === 'string' && category.toLowerCase() === specialCategoryFilter.toLowerCase())
       })()
       
       return matchesSearch && matchesStatus && matchesHouseholdRole && 
@@ -107,10 +121,10 @@ export default function ResidentsTable({
 
     // Sort data
     filtered.sort((a, b) => {
-      let aValue = a[sortField]
-      let bValue = b[sortField]
+      let aValue = a[sortField] || ''
+      let bValue = b[sortField] || ''
       
-      if (typeof aValue === 'string') {
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
         aValue = aValue.toLowerCase()
         bValue = bValue.toLowerCase()
       }
@@ -170,11 +184,13 @@ export default function ResidentsTable({
       setter: setHouseholdRoleFilter,
       handler: handleHouseholdRoleFilterChange,
       options: [
-        { value: 'all', label: 'Any Role' },
-        { value: 'head', label: 'Head of Household' },
-        { value: 'member', label: 'Family Member' },
-        { value: 'boarder', label: 'Boarder/Renter' },
-        { value: 'helper', label: 'Household Helper' }
+        { value: 'all', label: 'All Roles' },
+        { value: 'father', label: 'Father' },
+        { value: 'mother', label: 'Mother' },
+        { value: 'child', label: 'Child' },
+        { value: 'grandfather', label: 'Grandfather' },
+        { value: 'grandmother', label: 'Grandmother' },
+        { value: 'sibling', label: 'Sibling' }
       ]
     },
     ageGroup: {
@@ -198,10 +214,12 @@ export default function ResidentsTable({
       handler: handleCivilStatusFilterChange,
       options: [
         { value: 'all', label: 'Any Status' },
-        { value: 'single', label: 'Single' },
-        { value: 'married', label: 'Married' },
-        { value: 'widowed', label: 'Widowed' },
-        { value: 'separated', label: 'Separated' }
+        { value: 'Single', label: 'Single' },
+        { value: 'Married', label: 'Married' },
+        { value: 'Live in', label: 'Live in' },
+        { value: 'Solo Parent', label: 'Solo Parent' },
+        { value: 'Widowed', label: 'Widowed' },
+        { value: 'Separated', label: 'Separated' }
       ]
     },
     specialCategory: {
@@ -600,7 +618,7 @@ export default function ResidentsTable({
                 <button
                   onClick={() => {
                     setSearchQuery('')
-                    setStatusFilter('all')
+                    // Keep status filter as 'active' by default, don't reset it
                     setHouseholdRoleFilter('all')
                     setAgeGroupFilter('all')
                     setCivilStatusFilter('all')
@@ -719,10 +737,10 @@ export default function ResidentsTable({
                 <thead className={`bg-gray-100 sticky top-0 z-[5] ${isScrolled ? 'shadow-sm' : ''}`}>
                   <tr>
                     <th 
-                      onClick={() => handleSort('name')}
+                      onClick={() => handleSort('first_name')}
                       className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors"
                     >
-                      Name <SortIcon field="name" />
+                      Name <SortIcon field="first_name" />
                     </th>
                     <th 
                       onClick={() => handleSort('address')}
@@ -730,14 +748,29 @@ export default function ResidentsTable({
                     >
                       Address <SortIcon field="address" />
                     </th>
-                    <th className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase">
-                      Phone
-                    </th>
                     <th 
-                      onClick={() => handleSort('status')}
+                      onClick={() => handleSort('purok')}
                       className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors"
                     >
-                      Status <SortIcon field="status" />
+                      Purok <SortIcon field="purok" />
+                    </th>
+                    <th className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase">
+                      Contact
+                    </th>
+                    <th 
+                      onClick={() => handleSort('age')}
+                      className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors"
+                    >
+                      Age <SortIcon field="age" />
+                    </th>
+                    <th className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase">
+                      Resident Type
+                    </th>
+                    <th 
+                      onClick={() => handleSort('civil_status')}
+                      className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors"
+                    >
+                      Civil Status <SortIcon field="civil_status" />
                     </th>
                     <th className="px-3 py-1 text-right text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase">
                       Actions
@@ -758,30 +791,43 @@ export default function ResidentsTable({
                       }`}
                     >
                       <td className="px-3 py-1 whitespace-nowrap">
-                        <span className="text-xs font-semibold tracking-normal antialiased text-gray-900">{resident.name}</span>
+                        <span className="text-xs font-semibold tracking-normal antialiased text-gray-900">
+                          {(() => {
+                            const firstName = displayValue(resident.first_name, '');
+                            const middleInitial = resident.middle_initial ? resident.middle_initial.charAt(0) + '.' : '';
+                            const lastName = displayValue(resident.last_name, '');
+                            const fullName = `${firstName} ${middleInitial} ${lastName}`.replace(/\s+/g, ' ').trim();
+                            return fullName || '-';
+                          })()}
+                        </span>
                         <span className="text-xs font-medium tracking-normal antialiased text-gray-500 ml-2">ID: {resident.id}</span>
                       </td>
                       <td className="px-3 py-1">
                         <span className="text-xs font-medium tracking-normal antialiased text-gray-900 max-w-xs truncate" title={resident.address}>
-                          {resident.address}
+                          {displayValue(resident.address)}
                         </span>
                       </td>
                       <td className="px-3 py-1 whitespace-nowrap">
-                        <span className="text-xs font-medium tracking-normal antialiased text-gray-900">{resident.phone}</span>
-                        <span className="text-xs font-medium tracking-normal antialiased text-gray-500 ml-2 truncate max-w-xs" title={resident.email}>
-                          {resident.email}
+                        <span className="text-xs font-medium tracking-normal antialiased text-gray-900">
+                          {resident.purok ? `Purok ${resident.purok}` : '-'}
                         </span>
                       </td>
                       <td className="px-3 py-1 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold tracking-normal antialiased rounded ${
-                          resident.status === 'Active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          <i className={`bi ${
-                            resident.status === 'Active' ? 'bi-check-circle' : 'bi-x-circle'
-                          } mr-1 text-xs`}></i>
-                          {resident.status}
+                        <span className="text-xs font-medium tracking-normal antialiased text-gray-900">{displayValue(resident.contact_number)}</span>
+                      </td>
+                      <td className="px-3 py-1 whitespace-nowrap">
+                        <span className="text-xs font-medium tracking-normal antialiased text-gray-900">
+                          {displayValue(resident.age)}
+                        </span>
+                      </td>
+                      <td className="px-3 py-1 whitespace-nowrap">
+                        <span className="text-xs font-medium tracking-normal antialiased text-gray-900">
+                          {displayValue(resident.resident_type, 'Regular')}
+                        </span>
+                      </td>
+                      <td className="px-3 py-1 whitespace-nowrap">
+                        <span className="text-xs font-medium tracking-normal antialiased text-gray-900">
+                          {displayValue(resident.civil_status)}
                         </span>
                       </td>
                       <td className="px-3 py-1 whitespace-nowrap text-right text-sm font-medium">
