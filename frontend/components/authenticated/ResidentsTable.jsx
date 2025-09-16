@@ -317,49 +317,77 @@ export default function ResidentsTable({
       startPage = Math.max(1, endPage - maxVisible + 1)
     }
 
-    // Previous button
+  // First Page button (icon)
+  buttons.push(
+    <button
+      key="first"
+      onClick={() => goToPage(1)}
+      disabled={currentPage === 1}
+      className="px-2 py-1 text-xs font-semibold text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center"
+      aria-label="First page"
+    >
+      First
+    </button>
+  )
+
+  // Previous button
+  buttons.push(
+    <button
+      key="prev"
+      onClick={() => goToPage(currentPage - 1)}
+      disabled={currentPage === 1}
+      className="px-2 py-1 text-xs font-semibold text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center"
+      aria-label="Previous page"
+    >
+      Previous
+    </button>
+  )
+
+  // Page numbers
+  for (let i = startPage; i <= endPage; i++) {
     buttons.push(
       <button
-        key="prev"
-        onClick={() => goToPage(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="px-2 py-1 text-xs font-semibold tracking-normal antialiased text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        key={i}
+        onClick={() => goToPage(i)}
+        className={`px-2 py-1 text-xs font-semibold border-t border-b border-r border-gray-300 cursor-pointer flex items-center ${
+          currentPage === i
+            ? 'bg-blue-50 text-blue-600 border-blue-500 font-bold'
+            : 'bg-white text-gray-700 hover:bg-gray-50'
+        }`}
       >
-        Previous
+        {i}
       </button>
     )
-
-    // Page numbers
-    for (let i = startPage; i <= endPage; i++) {
-      buttons.push(
-        <button
-          key={i}
-          onClick={() => goToPage(i)}
-          className={`px-2 py-1 text-xs font-semibold tracking-normal antialiased border-t border-b border-r border-gray-300 cursor-pointer ${
-            currentPage === i
-              ? 'bg-blue-50 text-blue-600 border-blue-500 font-bold'
-              : 'bg-white text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          {i}
-        </button>
-      )
-    }
-
-    // Next button
-    buttons.push(
-      <button
-        key="next"
-        onClick={() => goToPage(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="px-2 py-1 text-xs font-semibold tracking-normal antialiased text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-      >
-        Next
-      </button>
-    )
-
-    return buttons
   }
+
+  // Next button
+  buttons.push(
+<button
+  key="next"
+  onClick={() => goToPage(currentPage + 1)}
+  disabled={currentPage === totalPages}
+  className="px-2 py-1 text-xs font-semibold text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center"
+  aria-label="Next page"
+>
+  Next
+</button>
+  )
+
+  // Last Page button (icon)
+  buttons.push(
+<button
+  key="last"
+  onClick={() => goToPage(totalPages)}
+  disabled={currentPage === totalPages}
+  className="px-2 py-1 text-xs font-semibold text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center"
+  aria-label="Last page"
+>
+    Last
+</button>
+  )
+
+  return buttons
+}
 
   const SortIcon = ({ field }) => {
     if (sortField !== field) {
