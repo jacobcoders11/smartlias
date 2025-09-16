@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
-import Spinner from '../common/Spinner'
-
-export default function ResidentsTable({ 
+export default function ResidentsContainer({ 
   residents = [], 
   loading = false, 
   onView, 
@@ -23,10 +21,8 @@ export default function ResidentsTable({
   const [hoveredFilter, setHoveredFilter] = useState(null) // Track which filter is being hovered
   
     // Filter values for additional filters
-  const [purokFilter, setPurokFilter] = useState('all')
-  const [genderFilter, setGenderFilter] = useState('all')
-  const [ageRangeFilter, setAgeRangeFilter] = useState('all')
   const [civilStatusFilter, setCivilStatusFilter] = useState('all')
+  const [purokFilter, setPurokFilter] = useState('all')
   const [householdRoleFilter, setHouseholdRoleFilter] = useState('all')
   const [ageGroupFilter, setAgeGroupFilter] = useState('all')
   const [specialCategoryFilter, setSpecialCategoryFilter] = useState('all')
@@ -47,8 +43,6 @@ export default function ResidentsTable({
     civilStatusFilter !== 'all' || 
     specialCategoryFilter !== 'all'
   
-  const tableContainerRef = useRef(null)
-
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -85,8 +79,8 @@ export default function ResidentsTable({
         (resident.contact_number && resident.contact_number.toLowerCase().includes(searchQuery.toLowerCase()))
       
       const matchesStatus = statusFilter === 'all' || 
-        (statusFilter === 'active' && resident.status === 1) ||
-        (statusFilter === 'inactive' && resident.status === 0)
+        (statusFilter === 'active' && resident.is_active === 1) ||
+        (statusFilter === 'inactive' && resident.is_active === 0)
       
       // Household Role Filter
       const matchesHouseholdRole = householdRoleFilter === 'all' || 
@@ -155,6 +149,16 @@ export default function ResidentsTable({
   }
 
   // Additional filter handlers
+  const handlePurokFilterChange = (value) => {
+  setPurokFilter(value)
+  setSearchQuery('')
+  setStatusFilter('active')
+  setHouseholdRoleFilter('all')
+  setAgeGroupFilter('all')
+  setCivilStatusFilter('all')
+  setSpecialCategoryFilter('all')
+  setCurrentPage(1)
+  }
   const handleHouseholdRoleFilterChange = (value) => {
     setHouseholdRoleFilter(value)
     setCurrentPage(1)
@@ -177,6 +181,23 @@ export default function ResidentsTable({
 
   // Available filter options
   const availableFilters = {
+    purok: {
+      key: 'purok',
+      label: 'Purok',
+      value: purokFilter,
+      setter: setPurokFilter,
+      handler: handlePurokFilterChange,
+      options: [
+  { value: 'all', label: 'Any' },
+  { value: '1', label: '1' },
+  { value: '2', label: '2' },
+  { value: '3', label: '3' },
+  { value: '4', label: '4' },
+  { value: '5', label: '5' },
+  { value: '6', label: '6' },
+  { value: '7', label: '7' }
+      ]
+    },
     householdRole: {
       key: 'householdRole',
       label: 'Household Role',
@@ -200,7 +221,7 @@ export default function ResidentsTable({
       setter: setAgeGroupFilter,
       handler: handleAgeGroupFilterChange,
       options: [
-        { value: 'all', label: 'Any Age' },
+  { value: 'all', label: 'Any' },
         { value: 'child', label: 'Child/Minor (<18)' },
         { value: 'adult', label: 'Adult (18-59)' },
         { value: 'senior', label: 'Senior Citizen (60+)' }
@@ -213,7 +234,7 @@ export default function ResidentsTable({
       setter: setCivilStatusFilter,
       handler: handleCivilStatusFilterChange,
       options: [
-        { value: 'all', label: 'Any Status' },
+  { value: 'all', label: 'Any' },
         { value: 'Single', label: 'Single' },
         { value: 'Married', label: 'Married' },
         { value: 'Live in', label: 'Live in' },
@@ -224,12 +245,12 @@ export default function ResidentsTable({
     },
     specialCategory: {
       key: 'specialCategory',
-      label: 'Special Category',
+  label: 'Resident Type',
       value: specialCategoryFilter,
       setter: setSpecialCategoryFilter,
       handler: handleSpecialCategoryFilterChange,
       options: [
-        { value: 'all', label: 'Any Category' },
+  { value: 'all', label: 'Any' },
         { value: 'pwd', label: 'Persons with Disability (PWD)' },
         { value: 'solo-parent', label: 'Solo Parent' },
         { value: 'indigent', label: 'Indigent/Low-income' },
@@ -837,7 +858,7 @@ export default function ResidentsTable({
                       </td>
                       <td className="px-3 py-1 whitespace-nowrap">
                         <span className="text-xs font-medium tracking-normal antialiased text-gray-900">
-                          {resident.purok ? `Purok ${resident.purok}` : '-'}
+                          {resident.purok ? `${resident.purok}` : '-'}
                         </span>
                       </td>
                       <td className="px-3 py-1 whitespace-nowrap">

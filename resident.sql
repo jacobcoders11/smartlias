@@ -18,16 +18,37 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `barangay residents`
+-- Database: `smartliasdb`
 --
 
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `users`
+--
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `username` varchar(256) DEFAULT NULL,
+  `password` varchar(256) DEFAULT NULL,
+  `role` int(2) DEFAULT NULL,
+  `is_active` int(2) DEFAULT 1,
+  `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `is_password_changed` int(2) DEFAULT 0,
+  `failed_login_attempts` int(2) DEFAULT 0,
+  `locked_until` datetime NULL DEFAULT NULL,
+  `last_login` datetime NULL DEFAULT NULL,
+  `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_failed_login` datetime NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+
+--
 -- Table structure for table `resident`
 --
-
 CREATE TABLE `resident` (
+  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` int(11) DEFAULT NULL,
   `address` varchar(256) DEFAULT NULL,
   `purok` int(3) DEFAULT NULL,
   `barangay` varchar(256) DEFAULT NULL,
@@ -43,6 +64,8 @@ CREATE TABLE `resident` (
   `religion` varchar(256) DEFAULT NULL,
   `work` varchar(256) DEFAULT NULL,
   `civil_status` varchar(256) DEFAULT NULL
+  `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
