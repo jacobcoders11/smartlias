@@ -79,7 +79,7 @@ export default function Sidebar({ role = 'user', collapsed, setCollapsed, mobile
       {/* Header */}
       <div className={`py-3 border-b border-gray-200 bg-white px-2`}>
         <div className="flex items-center">
-          <div className={`flex items-center justify-center rounded-md w-14 h-14 flex-shrink-0 ${isCollapsed ? 'mx-auto' : ''}`}>
+          <div className="flex items-center justify-center rounded-md w-14 h-14 flex-shrink-0">
             <img src="/images/barangay_logo.png" alt="Logo" className="w-8 h-8 object-contain" />
           </div>
           {!isCollapsed && (
@@ -107,7 +107,7 @@ export default function Sidebar({ role = 'user', collapsed, setCollapsed, mobile
             <div key={item.href} className="relative group">
               <Link 
                 href={item.href} 
-                className={`flex items-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-150 rounded-md px-3 py-2.5 text-sm ${
+                className={`flex items-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-150 rounded-md px-4 py-2.5 text-sm ${
                   active ? 'bg-gray-100 text-gray-900 font-medium' : ''
                 }`}
                 onClick={() => setMobileMenuOpen && setMobileMenuOpen(false)}

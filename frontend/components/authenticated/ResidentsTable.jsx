@@ -644,7 +644,7 @@ export default function ResidentsTable({
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {loading ? (
           <div 
-            className="table-container overflow-auto min-h-[calc(100vh-320px)] max-h-[calc(100vh-320px)]"
+            className="table-container overflow-auto min-h-[calc(100vh-280px)] max-h-[calc(100vh-280px)]"
           >
             <table className="min-w-full h-full divide-y divide-gray-200 divide-x divide-gray-200">
               <thead className="bg-gray-100 sticky top-0 z-[5] border-b border-gray-200">
@@ -714,7 +714,7 @@ export default function ResidentsTable({
           </div>
         ) : (
           <div className="overflow-hidden">
-            <div className="table-container overflow-auto min-h-[calc(100vh-320px)] max-h-[calc(100vh-320px)] bg-gray-50">
+            <div className="table-container overflow-auto min-h-[calc(100vh-280px)] max-h-[calc(100vh-280px)] bg-gray-50">
               <table className="w-full bg-white">
                 <thead className={`bg-gray-100 sticky top-0 z-[5] ${isScrolled ? 'shadow-sm' : ''}`}>
                   <tr>
