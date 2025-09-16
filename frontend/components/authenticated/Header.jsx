@@ -40,7 +40,7 @@ export default function Header({ title, role = 'user', userName = 'Juan Dela Cru
   return (
     <>
       <header className="bg-green-800 border-b border-green-700 relative z-30 h-12">
-        <div className="flex items-center justify-between px- py-2 h-full">
+        <div className="flex items-center justify-between px-6 py-2 h-full">
           <div className="flex items-center space-x-3">
             {/* Mobile Hamburger Menu */}
             <button

@@ -58,17 +58,17 @@ export default function Sidebar({ role = 'user', collapsed, setCollapsed, mobile
 
   return (
     <div 
-      className={`fixed inset-y-0 left-0 bg-green-900 text-white transition-all duration-200 ease-in-out border-r border-green-700 z-40 ${
-        isCollapsed ? 'w-16' : 'w-64'
+      className={`fixed inset-y-0 left-0 bg-white text-gray-700 transition-all duration-200 ease-in-out shadow-lg z-40 ${
+        isCollapsed ? 'w-18' : 'w-64'
       } ${
         mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}
     >
       {/* Mobile Close Button */}
       <div className="lg:hidden absolute top-3 right-3 z-10">
-        <button
+                <button
           onClick={() => setMobileMenuOpen && setMobileMenuOpen(false)}
-          className="p-1 rounded-md text-green-300 hover:text-white focus:outline-none bg-green-700"
+          className="p-1 rounded-md text-gray-500 hover:text-gray-700 focus:outline-none bg-gray-100 hover:bg-gray-200 cursor-pointer"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -77,15 +77,15 @@ export default function Sidebar({ role = 'user', collapsed, setCollapsed, mobile
       </div>
 
       {/* Header */}
-      <div className={`px-4 py-3 border-b border-green-700 bg-green-800 ${isCollapsed ? 'px-2' : 'px-2'}`}>
+      <div className={`py-3 border-b border-gray-200 bg-white px-2`}>
         <div className="flex items-center">
-          <div className={`flex items-center justify-center bg-green-700 rounded-md ${isCollapsed ? 'w-8 h-8' : 'w-10 h-10'}`}>
-            <img src="/images/barangay_logo.png" alt="Logo" className="w-6 h-6 object-contain" />
+          <div className={`flex items-center justify-center rounded-md w-14 h-14 flex-shrink-0 ${isCollapsed ? 'mx-auto' : ''}`}>
+            <img src="/images/barangay_logo.png" alt="Logo" className="w-8 h-8 object-contain" />
           </div>
           {!isCollapsed && (
-            <div className="ml-3">
-              <h2 className="text-sm font-semibold text-white">SMARTLIAS</h2>
-              <p className="text-xs text-green-300">{role === 'admin' ? 'Admin' : 'User'}</p>
+            <div className="ml-3 min-w-0 flex-1">
+              <h2 className="text-sm font-semibold text-gray-900">SMARTLIAS</h2>
+              <p className="text-xs text-gray-500">{role === 'admin' ? 'Admin' : 'User'}</p>
             </div>
           )}
         </div>
@@ -93,7 +93,7 @@ export default function Sidebar({ role = 'user', collapsed, setCollapsed, mobile
         {/* Toggle Button - Desktop Only */}
         <button 
           onClick={handleToggle}
-          className="hidden lg:flex absolute -right-3 top-6 w-6 h-6 bg-green-700 border border-green-600 rounded-full items-center justify-center text-green-300 hover:text-white transition-colors"
+          className="hidden lg:flex absolute -right-3 top-6 w-6 h-6 bg-white border border-gray-300 rounded-full items-center justify-center text-gray-600 hover:text-gray-900 hover:border-gray-400 transition-colors shadow-sm cursor-pointer"
         >
           <i className={`bi bi-chevron-left text-xs ${isCollapsed ? 'rotate-180' : ''}`}></i>
         </button>
@@ -107,18 +107,20 @@ export default function Sidebar({ role = 'user', collapsed, setCollapsed, mobile
             <div key={item.href} className="relative group">
               <Link 
                 href={item.href} 
-                className={`flex items-center text-green-100 hover:text-white hover:bg-green-700 transition-all duration-150 rounded-md px-3 py-2 text-sm ${
-                  active ? 'bg-green-700 text-white font-medium' : ''
+                className={`flex items-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-150 rounded-md px-3 py-2.5 text-sm ${
+                  active ? 'bg-gray-100 text-gray-900 font-medium' : ''
                 }`}
                 onClick={() => setMobileMenuOpen && setMobileMenuOpen(false)}
               >
-                <i className={`bi ${item.icon} flex-shrink-0 text-base ${isCollapsed ? 'mr-0' : 'mr-3'}`}></i>
-                {!isCollapsed && <span>{item.name}</span>}
+                <div className="flex justify-center flex-shrink-0 w-6">
+                  <i className={`bi ${item.icon} text-base`}></i>
+                </div>
+                {!isCollapsed && <span className="ml-3">{item.name}</span>}
               </Link>
               {isCollapsed && (
-                <div className="hidden lg:block absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-green-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">
+                <div className="hidden lg:block absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">
                   {item.name}
-                  <div className="absolute right-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-green-700"></div>
+                  <div className="absolute right-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-gray-800"></div>
                 </div>
               )}
             </div>
