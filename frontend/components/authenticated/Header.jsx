@@ -1,6 +1,6 @@
  'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ApiClient from '../../lib/apiClient'
@@ -12,6 +12,18 @@ export default function Header({ title, role = 'user', userName = 'Juan Dela Cru
   const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   const computedTitle = title ?? (role === 'admin' ? 'Admin Dashboard' : 'Resident Dashboard')
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showUserMenu && !event.target.closest('.user-menu-container')) {
+        setShowUserMenu(false)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showUserMenu])
 
   const handleLogout = async () => {
     try {
@@ -32,11 +44,11 @@ export default function Header({ title, role = 'user', userName = 'Juan Dela Cru
           <h1 className="text-2xl font-semibold text-gray-800">{computedTitle}</h1>
 
           <div className="flex items-center space-x-4">
-            <button className="p-2 text-gray-500 hover:text-gray-700 cursor-pointer">
+            {/* <button className="p-2 text-gray-500 hover:text-gray-700 cursor-pointer">
               <i className="bi bi-bell text-xl"></i>
-            </button>
+            </button> */}
 
-            <div className="relative">
+            <div className="relative user-menu-container">
               <button 
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 cursor-pointer"

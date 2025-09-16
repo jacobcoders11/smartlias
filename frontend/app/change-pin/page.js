@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import ToastNotification from '../../components/common/ToastNotification'
 import PublicLayout from '../../components/public/PublicLayout'
 import ChangePINCard from '../../components/public/ChangePINCard'
@@ -217,9 +218,24 @@ export default function ChangePINPage() {
     return <PageLoading />
   }
 
+  // Simple Navigation Header
+  const NavigationHeader = () => (
+    <header className="absolute top-0 left-0 right-0 z-30 p-4 lg:p-6">
+      <nav className="flex justify-end items-center">
+        <Link 
+          href="/home"
+          className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md text-white/90 hover:text-white hover:bg-white/10 focus:ring-2 focus:ring-white/50 focus:outline-none transition-all duration-200"
+        >
+          ← Home
+        </Link>
+      </nav>
+    </header>
+  )
+
   return (
     <>
       <ToastNotification ref={toastRef} />
+      <NavigationHeader />
       <PublicLayout 
         variant="change-pin" 
         hideBackgroundImage={showKeypad}
