@@ -33,6 +33,17 @@ export default function Header({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showUserMenu])
 
+  const handleLogout = async () => {
+    try {
+      await ApiClient.logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showUserMenu])
+
     const handleLogout = async () => {
     if (onLogout) {
       onLogout()
@@ -48,24 +59,15 @@ export default function Header({
 
   return (
     <>
-      <header className="bg-green-800 border-b border-green-700 relative z-30 h-12">
-        <div className="flex items-center justify-between px-6 py-2 h-full">
-          <div className="flex items-center space-x-3">
-            {/* Mobile Hamburger Menu */}
-            <button
-              onClick={() => setMobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-1 rounded-md text-green-200 hover:text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 cursor-pointer"
-              aria-label="Toggle mobile menu"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <h1 className="text-lg font-medium text-white">{computedTitle}</h1>
-          </div>
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="flex items-center justify-between px-6 py-4">
+          <h1 className="text-2xl font-semibold text-gray-800">{computedTitle}</h1>
 
-          <div className="flex items-center space-x-3">
-            {/* User Menu */}
+          <div className="flex items-center space-x-4">
+            {/* <button className="p-2 text-gray-500 hover:text-gray-700 cursor-pointer">
+              <i className="bi bi-bell text-xl"></i>
+            </button> */}
+
             <div className="relative user-menu-container">
               <button 
                 onClick={() => setShowUserMenu(!showUserMenu)}
