@@ -205,7 +205,7 @@ export default function ResidentsContainer({
       setter: setHouseholdRoleFilter,
       handler: handleHouseholdRoleFilterChange,
       options: [
-        { value: 'all', label: 'All Roles' },
+        { value: 'all', label: 'Any' },
         { value: 'father', label: 'Father' },
         { value: 'mother', label: 'Mother' },
         { value: 'child', label: 'Child' },
@@ -461,7 +461,7 @@ export default function ResidentsContainer({
             </button>
             
             {openDropdown === 'perPage' && (
-              <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-[8]">
+              <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                 <div className="py-1">
                   {[25, 50, 100].map((value) => (
                     <button
@@ -522,7 +522,7 @@ export default function ResidentsContainer({
               </button>
               
               {openDropdown === 'statusFilter' && (
-                <div className="absolute left-0 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 z-[8]">
+                <div className="absolute left-0 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 z-50">
                   <div className="py-1">
                     {/* Any Status Option */}
                     <button
@@ -587,7 +587,7 @@ export default function ResidentsContainer({
           {Object.entries(availableFilters).map(([filterKey, filter]) => {
             const isHovered = hoveredFilter === filterKey
             return (
-              <div key={filterKey} className="w-auto min-w-24 relative">
+              <div key={filterKey} className={`w-auto relative ${filterKey === 'ageGroup' ? 'min-w-32' : 'min-w-24'}`}>
                 <div className="relative dropdown-container">
                   {/* Filter Dropdown with Hover Effect */}
                   <button
@@ -631,7 +631,7 @@ export default function ResidentsContainer({
                   </button>
                   
                   {openDropdown === filterKey && (
-                    <div className="absolute left-0 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 z-[8]">
+                    <div className="absolute left-0 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 z-50">
                       <div className="py-1">
                         {filter.options.map((option) => (
                           <button
@@ -674,7 +674,7 @@ export default function ResidentsContainer({
                     setSpecialCategoryFilter('all')
                     setCurrentPage(1)
                   }}
-                  className="w-full inline-flex items-center justify-between px-3 p-2 text-xs font-medium tracking-normal antialiased text-gray-600 hover:text-gray-700 hover:bg-gray-100 active:bg-gray-200 rounded-md transition-colors cursor-pointer"
+                  className="w-full inline-flex items-center justify-between px-2 py-1 text-xs font-medium tracking-normal antialiased text-gray-600 hover:text-blue-600 hover:underline decoration-blue-500 underline-offset-2 rounded-md transition-all cursor-pointer"
                   title="Reset all filters"
                 >
                   Reset Filters
@@ -713,22 +713,31 @@ export default function ResidentsContainer({
           <div 
             className="table-container overflow-auto min-h-[calc(100vh-280px)] max-h-[calc(100vh-280px)]"
           >
-            <table className="min-w-full h-full divide-y divide-gray-200 divide-x divide-gray-200">
+            <table className="min-w-full h-full divide-y divide-gray-200 divide-x divide-gray-200 table-fixed">
               <thead className="bg-gray-100 sticky top-0 z-[5] border-b border-gray-200">
                 <tr className="divide-x divide-gray-200">
-                  <th className="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-14">
+                    <div className="w-8 h-3 bg-gray-200 rounded animate-pulse"></div>
+                  </th>
+                  <th className="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-52">
                     <div className="w-16 h-3 bg-gray-200 rounded animate-pulse"></div>
                   </th>
-                  <th className="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-72">
                     <div className="w-20 h-3 bg-gray-200 rounded animate-pulse"></div>
                   </th>
-                  <th className="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                    <div className="w-12 h-3 bg-gray-200 rounded animate-pulse"></div>
+                  </th>
+                  <th className="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                     <div className="w-16 h-3 bg-gray-200 rounded animate-pulse"></div>
                   </th>
-                  <th className="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                    <div className="w-8 h-3 bg-gray-200 rounded animate-pulse"></div>
+                  </th>
+                  <th className="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                     <div className="w-16 h-3 bg-gray-200 rounded animate-pulse"></div>
                   </th>
-                  <th className="px-3 py-1 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                     <div className="w-16 h-3 bg-gray-200 rounded animate-pulse ml-auto"></div>
                   </th>
                 </tr>
@@ -739,26 +748,32 @@ export default function ResidentsContainer({
                   <tr key={`skeleton-${index}`} className={`divide-x divide-gray-200 ${
                     index % 2 === 0 ? 'bg-white' : 'bg-gray-25'
                   }`}>
-                    <td className="px-3 py-1 whitespace-nowrap">
+                    <td className="px-3 py-1 whitespace-nowrap w-14">
+                      <div className="w-8 h-3 bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-3 py-1 whitespace-nowrap w-52">
                       <div className="space-y-1">
                         <div className="w-32 h-3 bg-gray-200 rounded animate-pulse"></div>
                         <div className="w-16 h-2 bg-gray-100 rounded animate-pulse"></div>
                       </div>
                     </td>
-                    <td className="px-3 py-1">
-                      <div className="w-40 h-3 bg-gray-200 rounded animate-pulse"></div>
+                    <td className="px-3 py-1 w-72">
+                      <div className="w-48 h-3 bg-gray-200 rounded animate-pulse"></div>
                     </td>
-                    <td className="px-3 py-1 whitespace-nowrap">
-                      <div className="space-y-1">
-                        <div className="w-24 h-3 bg-gray-200 rounded animate-pulse"></div>
-                        <div className="w-32 h-2 bg-gray-100 rounded animate-pulse"></div>
-                      </div>
+                    <td className="px-3 py-1 whitespace-nowrap w-12">
+                      <div className="w-8 h-3 bg-gray-200 rounded animate-pulse"></div>
                     </td>
-                    <td className="px-3 py-1 whitespace-nowrap">
-                      <div className="w-16 h-5 bg-gray-200 rounded-full animate-pulse"></div>
+                    <td className="px-3 py-1 whitespace-nowrap w-28">
+                      <div className="w-20 h-3 bg-gray-200 rounded animate-pulse"></div>
                     </td>
-                    <td className="px-3 py-1 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="w-6 h-6 bg-gray-200 rounded animate-pulse ml-auto"></div>
+                    <td className="px-3 py-1 whitespace-nowrap w-12">
+                      <div className="w-6 h-3 bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-3 py-1 whitespace-nowrap w-28">
+                      <div className="w-20 h-3 bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-3 py-1 whitespace-nowrap w-24">
+                      <div className="w-16 h-3 bg-gray-200 rounded animate-pulse"></div>
                     </td>
                   </tr>
                 ))}
@@ -766,64 +781,76 @@ export default function ResidentsContainer({
             </table>
           </div>
         ) : filteredAndSortedData.length === 0 ? (
-          <div className="p-8 text-center">
-            <i className="bi bi-people text-4xl text-gray-300 mb-4"></i>
-            <p className="text-gray-500 text-lg mb-2">No residents found</p>
-            {(searchQuery || statusFilter !== 'all') ? (
-              <p className="text-sm text-gray-400">
-                Try adjusting your search or filter criteria
-              </p>
-            ) : (
-              <p className="text-sm text-gray-400">
-                Add your first resident to get started
-              </p>
-            )}
+          <div className="overflow-hidden">
+            <div className="table-container overflow-auto min-h-[calc(100vh-280px)] max-h-[calc(100vh-280px)] bg-gray-50 flex items-center justify-center">
+              <div className="text-center">
+                <i className="bi bi-search text-4xl text-gray-300 mb-4"></i>
+                <p className="text-gray-500 text-lg mb-2">No residents found</p>
+                {(searchQuery || statusFilter !== 'all') ? (
+                  <p className="text-sm text-gray-400">
+                    Try adjusting your search or filter criteria
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-400">
+                    Add your first resident to get started
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         ) : (
           <div className="overflow-hidden">
             <div className="table-container overflow-auto min-h-[calc(100vh-280px)] max-h-[calc(100vh-280px)] bg-gray-50">
-              <table className="w-full bg-white">
+              <table className="w-full bg-white table-fixed">
                 <thead className={`bg-gray-100 sticky top-0 z-[5] ${isScrolled ? 'shadow-sm' : ''}`}>
                   <tr>
                     <th 
+                      onClick={() => handleSort('id')}
+                      className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors w-14"
+                    >
+                      ID <SortIcon field="id" />
+                    </th>
+                    <th 
                       onClick={() => handleSort('first_name')}
-                      className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors"
+                      className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors w-52"
                     >
                       Name <SortIcon field="first_name" />
                     </th>
                     <th 
                       onClick={() => handleSort('address')}
-                      className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors"
+                      className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors w-72"
                     >
                       Address <SortIcon field="address" />
                     </th>
                     <th 
                       onClick={() => handleSort('purok')}
-                      className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors"
+                      className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors w-14"
                     >
                       Purok <SortIcon field="purok" />
                     </th>
-                    <th className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase">
+                    <th className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase w-28">
                       Contact
                     </th>
                     <th 
                       onClick={() => handleSort('age')}
-                      className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors"
+                      className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors w-12"
                     >
                       Age <SortIcon field="age" />
                     </th>
-                    <th className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase">
+                    <th className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase w-28">
                       Resident Type
                     </th>
                     <th 
                       onClick={() => handleSort('civil_status')}
-                      className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors"
+                      className="px-3 py-1 text-left text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase cursor-pointer hover:bg-gray-200 select-none transition-colors w-24"
                     >
                       Civil Status <SortIcon field="civil_status" />
                     </th>
+                    {/*
                     <th className="px-3 py-1 text-right text-xs font-semibold tracking-normal antialiased text-gray-600 uppercase">
                       Actions
                     </th>
+                    */}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
@@ -839,46 +866,51 @@ export default function ResidentsContainer({
                         index === currentData.length - 1 ? 'shadow-sm' : ''
                       }`}
                     >
-                      <td className="px-3 py-1 whitespace-nowrap">
+                      <td className="px-3 py-1 whitespace-nowrap w-14">
+                        <span className="text-xs font-semibold tracking-normal antialiased text-gray-900">
+                          {resident.id}
+                        </span>
+                      </td>
+                      <td className="px-3 py-1 whitespace-nowrap w-52">
                         <span className="text-xs font-semibold tracking-normal antialiased text-gray-900">
                           {(() => {
                             const firstName = displayValue(resident.first_name, '');
-                            const middleInitial = resident.middle_initial ? resident.middle_initial.charAt(0) + '.' : '';
+                            const middleInitial = resident.middle_name ? resident.middle_name.charAt(0) + '.' : '';
                             const lastName = displayValue(resident.last_name, '');
                             const fullName = `${firstName} ${middleInitial} ${lastName}`.replace(/\s+/g, ' ').trim();
                             return fullName || '-';
                           })()}
                         </span>
-                        <span className="text-xs font-medium tracking-normal antialiased text-gray-500 ml-2">ID: {resident.id}</span>
                       </td>
-                      <td className="px-3 py-1">
+                      <td className="px-3 py-1 w-72">
                         <span className="text-xs font-medium tracking-normal antialiased text-gray-900 max-w-xs truncate" title={resident.address}>
                           {displayValue(resident.address)}
                         </span>
                       </td>
-                      <td className="px-3 py-1 whitespace-nowrap">
+                      <td className="px-3 py-1 whitespace-nowrap w-12">
                         <span className="text-xs font-medium tracking-normal antialiased text-gray-900">
                           {resident.purok ? `${resident.purok}` : '-'}
                         </span>
                       </td>
-                      <td className="px-3 py-1 whitespace-nowrap">
+                      <td className="px-3 py-1 whitespace-nowrap w-28">
                         <span className="text-xs font-medium tracking-normal antialiased text-gray-900">{displayValue(resident.contact_number)}</span>
                       </td>
-                      <td className="px-3 py-1 whitespace-nowrap">
+                      <td className="px-3 py-1 whitespace-nowrap w-12">
                         <span className="text-xs font-medium tracking-normal antialiased text-gray-900">
                           {displayValue(resident.age)}
                         </span>
                       </td>
-                      <td className="px-3 py-1 whitespace-nowrap">
+                      <td className="px-3 py-1 whitespace-nowrap w-28">
                         <span className="text-xs font-medium tracking-normal antialiased text-gray-900">
                           {displayValue(resident.resident_type, 'Regular')}
                         </span>
                       </td>
-                      <td className="px-3 py-1 whitespace-nowrap">
+                      <td className="px-3 py-1 whitespace-nowrap w-24">
                         <span className="text-xs font-medium tracking-normal antialiased text-gray-900">
                           {displayValue(resident.civil_status)}
                         </span>
                       </td>
+                      {/*
                       <td className="px-3 py-1 whitespace-nowrap text-right text-sm font-medium">
                         <div 
                           className="relative dropdown-container"
@@ -893,7 +925,7 @@ export default function ResidentsContainer({
                           </button>
                           
                           {openDropdown === resident.id && (
-                            <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-[8]">
+                            <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                               <div className="py-1">
                                 <button 
                                   onClick={() => handleAction('view', resident)}
@@ -921,6 +953,7 @@ export default function ResidentsContainer({
                           )}
                         </div>
                       </td>
+                      */}
                     </tr>
                   ))}
                 </tbody>
@@ -945,6 +978,31 @@ export default function ResidentsContainer({
             
             <div className="text-xs font-medium tracking-normal antialiased text-gray-700">
               <span className="font-semibold">{filteredAndSortedData.length}</span> total results
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pagination Skeleton - Loading State */}
+      {loading && (
+        <div className="bg-white px-3 py-2 border border-gray-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="text-xs font-medium tracking-normal antialiased text-gray-700">
+              <div className="w-20 h-3 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            
+            <div className="flex py-1 items-center min-w-0 px-4 min-h-[32px] space-x-1">
+              <div className="w-12 h-6 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-16 h-6 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-6 h-6 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-6 h-6 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-6 h-6 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-12 h-6 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-12 h-6 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            
+            <div className="text-xs font-medium tracking-normal antialiased text-gray-700">
+              <div className="w-24 h-3 bg-gray-200 rounded animate-pulse"></div>
             </div>
           </div>
         </div>
