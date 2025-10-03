@@ -166,6 +166,12 @@ export default function ResidentsView({ open, onClose, children, onStatusUpdate 
                         </span>
                       </div>
                       <div className="flex justify-between">
+                        <span className="text-xs text-gray-500">Age</span>
+                        <span className="text-xs text-gray-900">
+                          {children.age !== null && children.age !== undefined ? `${children.age} years old` : '-'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
                         <span className="text-xs text-gray-500">Civil Status</span>
                         <span className="text-xs text-gray-900">{children.civil_status || '-'}</span>
                       </div>

@@ -161,8 +161,8 @@ export default function RegisterCard({
                     style={{ fontSize: '14px' }}
                   >
                     <option value="">Select gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
+                    <option value="1">Male</option>
+                    <option value="2">Female</option>
                   </select>
                   {errors.gender && (
                     <p className="text-xs text-red-500 mt-0.5">{errors.gender}</p>
