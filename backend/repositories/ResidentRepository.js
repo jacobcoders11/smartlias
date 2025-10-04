@@ -83,6 +83,45 @@ class ResidentRepository {
   }
 
   /**
+   * Update resident by ID with validation
+   * MANDATORY: Use same validation pipeline as create method
+   */
+  static async updateById(id, data) {
+    // CRITICAL: Use identical validation as create method
+    const Validator = require('../utils/validator')
+    const validation = Validator.validateResident(data)
+    if (!validation.isValid) {
+      throw new Error(`Validation failed: ${validation.errors.join(', ')}`)
+    }
+
+    // Apply formatTitleCase() to names and addresses (consistency)
+    const processedData = {
+      ...data,
+      firstName: Validator.formatTitleCase(data.firstName),
+      lastName: Validator.formatTitleCase(data.lastName),
+      middleName: Validator.formatTitleCase(data.middleName || ''),
+      address: Validator.formatTitleCase(data.address)
+    }
+
+    if (config.USE_MOCK_DATA) {
+      return await this._updateByIdJSON(id, processedData)
+    } else {
+      return await this._updateByIdDB(id, processedData)
+    }
+  }
+
+  /**
+   * Update resident status only (quick toggle without full validation)
+   */
+  static async updateStatus(id, isActive) {
+    if (config.USE_MOCK_DATA) {
+      return await this._updateStatusJSON(id, isActive)
+    } else {
+      return await this._updateStatusDB(id, isActive)
+    }
+  }
+
+  /**
    * Update resident
    */
   static async update(id, residentData) {
@@ -264,6 +303,140 @@ class ResidentRepository {
     })
 
     return transformed
+  }
+
+  /**
+   * Update resident in database with complete field support
+   */
+  static async _updateByIdDB(id, data) {
+    try {
+      // Transform data for database compatibility
+      const dbData = this._transformForDB(data)
+      
+      const result = await db.query(`
+        UPDATE residents SET
+          first_name = $1, last_name = $2, middle_name = $3, suffix = $4,
+          birth_date = $5, gender = $6, civil_status = $7,
+          home_number = $8, mobile_number = $9, email = $10,
+          address = $11, purok = $12, religion = $13, occupation = $14,
+          special_category = $15, notes = $16, is_active = $17,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $18
+        RETURNING *
+      `, [
+        dbData.firstName, dbData.lastName, dbData.middleName, dbData.suffix,
+        dbData.birthDate, dbData.gender, dbData.civilStatus,
+        dbData.homeNumber, dbData.mobileNumber, dbData.email,
+        dbData.address, dbData.purok, dbData.religion, dbData.occupation,
+        dbData.specialCategory, dbData.notes, dbData.isActive, 
+        id
+      ])
+
+      if (result.rows.length === 0) {
+        return null // Resident not found
+      }
+
+      // Return enriched resident data with formatted ID and calculated age
+      return this.enrichWithAge(result.rows[0])
+    } catch (error) {
+      logger.error('Error updating resident in database', { id, error: error.message })
+      throw error
+    }
+  }
+
+  /**
+   * Update resident in JSON file with complete field support
+   */
+  static async _updateByIdJSON(id, data) {
+    try {
+      const residents = await this._loadResidentsJSON()
+      const index = residents.findIndex(r => r.id === parseInt(id))
+      
+      if (index === -1) return null
+      
+      // Update resident with all provided fields
+      residents[index] = {
+        ...residents[index],
+        first_name: data.firstName,
+        last_name: data.lastName,
+        middle_name: data.middleName || '',
+        suffix: data.suffix || '',
+        birth_date: data.birthDate,
+        gender: data.gender,
+        civil_status: data.civilStatus,
+        home_number: data.homeNumber || '',
+        mobile_number: data.mobileNumber || '',
+        email: data.email || '',
+        address: data.address,
+        purok: data.purok,
+        religion: data.religion || '',
+        occupation: data.occupation || '',
+        special_category: data.specialCategory || '',
+        notes: data.notes || '',
+        is_active: data.isActive !== undefined ? data.isActive : residents[index].is_active,
+        updated_at: new Date().toISOString()
+      }
+      
+      await this._saveResidentsJSON(residents)
+      
+      // Return enriched resident data with formatted ID and calculated age
+      return this.enrichWithAge(residents[index])
+    } catch (error) {
+      logger.error('Error updating resident in JSON file', { id, error: error.message })
+      throw error
+    }
+  }
+
+  /**
+   * Update resident status in database (quick toggle)
+   */
+  static async _updateStatusDB(id, isActive) {
+    try {
+      const result = await db.query(`
+        UPDATE residents SET
+          is_active = $1,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $2
+        RETURNING *
+      `, [isActive, id])
+
+      if (result.rows.length === 0) {
+        return null // Resident not found
+      }
+
+      // Return enriched resident data with formatted ID and calculated age
+      return this.enrichWithAge(result.rows[0])
+    } catch (error) {
+      logger.error('Error updating resident status in database', { id, isActive, error: error.message })
+      throw error
+    }
+  }
+
+  /**
+   * Update resident status in JSON file (quick toggle)
+   */
+  static async _updateStatusJSON(id, isActive) {
+    try {
+      const residents = await this._loadResidentsJSON()
+      const index = residents.findIndex(r => r.id === parseInt(id))
+      
+      if (index === -1) return null
+      
+      // Update only the status field
+      residents[index] = {
+        ...residents[index],
+        is_active: isActive,
+        updated_at: new Date().toISOString()
+      }
+      
+      await this._saveResidentsJSON(residents)
+      
+      // Return enriched resident data with formatted ID and calculated age
+      return this.enrichWithAge(residents[index])
+    } catch (error) {
+      logger.error('Error updating resident status in JSON file', { id, isActive, error: error.message })
+      throw error
+    }
   }
 
   static async _updateDB(id, data) {

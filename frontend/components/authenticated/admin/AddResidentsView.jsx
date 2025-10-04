@@ -124,19 +124,19 @@ export default function AddResidentsView({ open, onClose, onSubmit, loading = fa
 
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required'
-    } else if (!/^[a-zA-Z\s'-]+$/.test(formData.firstName.trim())) {
-      newErrors.firstName = 'First name can only contain letters, spaces, hyphens, and apostrophes'
+    } else if (!/^[a-zA-Z\s]+$/.test(formData.firstName.trim())) {
+      newErrors.firstName = 'First name can only contain letters and spaces'
     }
     
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required'
-    } else if (!/^[a-zA-Z\s'-]+$/.test(formData.lastName.trim())) {
-      newErrors.lastName = 'Last name can only contain letters, spaces, hyphens, and apostrophes'
+    } else if (!/^[a-zA-Z\s]+$/.test(formData.lastName.trim())) {
+      newErrors.lastName = 'Last name can only contain letters and spaces'
     }
     
     // Middle name validation (optional but must be valid format if provided)
-    if (formData.middleName.trim() && !/^[a-zA-Z\s'-]+$/.test(formData.middleName.trim())) {
-      newErrors.middleName = 'Middle name can only contain letters, spaces, hyphens, and apostrophes'
+    if (formData.middleName.trim() && !/^[a-zA-Z\s]+$/.test(formData.middleName.trim())) {
+      newErrors.middleName = 'Middle name can only contain letters and spaces'
     }
     if (!formData.birthDate) {
       newErrors.birthDate = 'Birth date is required'
@@ -354,7 +354,7 @@ export default function AddResidentsView({ open, onClose, onSubmit, loading = fa
       >
         {/* Floating Close Button */}
         <button
-          className={`absolute top-2 right-[560px] sm:right-[560px] lg:right-[720px] xl:right-[820px] w-9 h-9 bg-white/30 hover:bg-white/45 text-white hover:text-gray-100 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-md transform -translate-x-4 cursor-pointer shadow-md hover:shadow-lg ${
+          className={`absolute top-2 right-[520px] sm:right-[520px] lg:right-[650px] xl:right-[750px] w-9 h-9 bg-white/30 hover:bg-white/45 text-white hover:text-gray-100 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-md transform -translate-x-4 cursor-pointer shadow-md hover:shadow-lg ${
             open ? 'opacity-100 scale-100' : 'opacity-10 scale-90'
           } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={(e) => {
@@ -370,7 +370,7 @@ export default function AddResidentsView({ open, onClose, onSubmit, loading = fa
       
       {/* Slide Panel from Right */}
       <div
-        className={`fixed right-0 top-0 h-full w-full sm:w-[560px] lg:w-[720px] xl:w-[820px] bg-gray-50 shadow-2xl transition-transform duration-300 ease-out transform ${
+        className={`fixed right-0 top-0 h-full w-full sm:w-[520px] lg:w-[650px] xl:w-[750px] bg-gray-50 shadow-2xl transition-transform duration-300 ease-out transform ${
           open ? 'translate-x-0' : 'translate-x-full'
         } overflow-hidden flex flex-col z-10`}
       >
@@ -400,7 +400,7 @@ export default function AddResidentsView({ open, onClose, onSubmit, loading = fa
 
         {/* Form Content - Scrollable */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto" noValidate>
-          <div className="p-6 space-y-6">
+          <div className="p-4 space-y-6">
             
             {/* Personal Information Section */}
             <div className="bg-white rounded-lg border border-gray-200 p-4">

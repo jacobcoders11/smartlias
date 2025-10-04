@@ -81,6 +81,7 @@ CREATE TABLE residents (
     -- Address Information
     address TEXT, -- Optional - some residents may not want to provide address
     purok INTEGER,
+    street 
     
     -- Family Information
     family_group_id INTEGER REFERENCES family_groups(id) ON DELETE SET NULL, -- Links to family group

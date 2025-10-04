@@ -23,6 +23,7 @@ const { authLimiter, passwordChangeLimiter, generalLimiter } = require('./config
 
 // Import shared messages
 const { AUTH_MESSAGES, HTTP_STATUS_MESSAGES } = require('../shared/constants')
+const { USER_ROLES } = require('./config/constants')
 
 const router = express.Router()
 
@@ -70,7 +71,7 @@ router.post('/auth/login', authLimiter, async (req, res) => {
     }
 
     // Verify PIN
-    const isValidPin = await bcrypt.compare(pin.toString(), user.passwordHash)
+    const isValidPin = await bcrypt.compare(pin.toString(), user.password)
 
     if (!isValidPin) {
       // Increment failed attempts
@@ -97,9 +98,7 @@ router.post('/auth/login', authLimiter, async (req, res) => {
       {
         id: user.id,
         username: user.username,
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName
+        role: user.role
       },
       config.JWT_SECRET,
       { expiresIn: config.JWT_EXPIRES_IN }
@@ -107,8 +106,8 @@ router.post('/auth/login', authLimiter, async (req, res) => {
 
     logger.info('Successful login', { username, role: user.role })
 
-    // Determine redirect URL
-    const redirectTo = user.role === 'admin' ? '/admin' : '/resident'
+    // Determine redirect URL based on role constants
+    const redirectTo = user.role === USER_ROLES.ADMIN ? '/admin' : '/resident'
 
     return ApiResponse.success(res, {
       token,
@@ -116,12 +115,10 @@ router.post('/auth/login', authLimiter, async (req, res) => {
         id: user.id,
         username: user.username,
         role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        passwordChanged: user.passwordChanged !== false
+        passwordChanged: user.is_password_changed !== 0
       },
       redirectTo
-    }, `Welcome ${user.firstName}!`)
+    }, `Welcome ${user.username}!`)
 
   } catch (error) {
     logger.error('Login error', error)
@@ -154,7 +151,6 @@ router.post('/auth/check-user', authLimiter, async (req, res) => {
     return ApiResponse.success(res, {
       user: {
         username: user.username,
-        firstName: user.firstName,
         role: user.role
       }
     }, 'User found')
@@ -172,9 +168,7 @@ router.get('/auth/me', authenticateToken, (req, res) => {
     user: {
       id: req.user.id,
       username: req.user.username,
-      role: req.user.role,
-      firstName: req.user.firstName,
-      lastName: req.user.lastName
+      role: req.user.role
     },
     message: 'User information retrieved'
   })
@@ -225,7 +219,7 @@ router.post('/auth/change-password', passwordChangeLimiter, authenticateToken, a
     }
 
     // Verify current PIN
-    const isValidCurrentPin = await bcrypt.compare(currentPin.toString(), user.passwordHash)
+    const isValidCurrentPin = await bcrypt.compare(currentPin.toString(), user.password)
     if (!isValidCurrentPin) {
       logger.warn('Invalid current PIN in change request', { username: req.user.username })
       return res.status(400).json({
@@ -416,59 +410,100 @@ router.put('/residents/:id', generalLimiter, authenticateToken, requireAdmin, as
     const { id } = req.params
     const updateData = req.body
 
+    // Validate resident ID
     if (!id || isNaN(parseInt(id))) {
-      return res.status(400).json({
-        success: false,
-        error: 'Valid resident ID is required'
-      })
+      return ApiResponse.error(res, 'Valid resident ID is required', 400)
     }
 
-    // Validate input
+    // CRITICAL: Use identical validation as POST /api/residents (create endpoint)
     const validation = Validator.validateResident(updateData)
     if (!validation.isValid) {
       Validator.logValidationError(req, validation, 'resident update')
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid resident data',
-        details: validation.errors
-      })
+      return ApiResponse.validationError(res, validation.errors, 'Invalid resident data')
     }
 
-    // Sanitize input data
+    // Sanitize input data (identical to create endpoint)
     const sanitizedData = {
       firstName: Validator.sanitizeInput(updateData.firstName),
       lastName: Validator.sanitizeInput(updateData.lastName),
       middleName: Validator.sanitizeInput(updateData.middleName || ''),
+      suffix: Validator.sanitizeInput(updateData.suffix || ''),
       birthDate: updateData.birthDate || null,
+      gender: Validator.sanitizeInput(updateData.gender || ''),
       civilStatus: Validator.sanitizeInput(updateData.civilStatus || ''),
-      address: Validator.sanitizeInput(updateData.address || ''),
-      contactNumber: Validator.sanitizeInput(updateData.contactNumber || ''),
+      homeNumber: Validator.sanitizeInput(updateData.homeNumber || ''),
+      mobileNumber: Validator.sanitizeInput(updateData.mobileNumber || ''),
       email: Validator.sanitizeInput(updateData.email || ''),
+      address: Validator.sanitizeInput(updateData.address || ''),
+      purok: updateData.purok || null,
+      religion: Validator.sanitizeInput(updateData.religion || ''),
+      occupation: Validator.sanitizeInput(updateData.occupation || ''),
+      specialCategory: Validator.sanitizeInput(updateData.specialCategory || ''),
+      notes: Validator.sanitizeInput(updateData.notes || ''),
+      isActive: updateData.isActive !== undefined ? updateData.isActive : 1
     }
 
-    const updatedResident = await ResidentRepository.update(id, sanitizedData)
+    // Apply formatTitleCase for consistency (same as create)
+    sanitizedData.firstName = Validator.formatTitleCase(sanitizedData.firstName)
+    sanitizedData.lastName = Validator.formatTitleCase(sanitizedData.lastName)
+    sanitizedData.middleName = Validator.formatTitleCase(sanitizedData.middleName)
+    sanitizedData.address = Validator.formatTitleCase(sanitizedData.address)
+
+    const updatedResident = await ResidentRepository.updateById(id, sanitizedData)
 
     if (!updatedResident) {
-      return res.status(404).json({
-        success: false,
-        error: 'Resident not found'
-      })
+      return ApiResponse.error(res, 'Resident not found', 404)
     }
 
-    logger.info(`Resident updated by ${req.user.username}`, { residentId: id })
-
-    res.json({
-      success: true,
-      data: updatedResident,
-      message: 'Resident updated successfully'
+    logger.info(`Resident updated by ${req.user.username}`, { 
+      residentId: id, 
+      updatedFields: Object.keys(sanitizedData).filter(key => sanitizedData[key] !== null && sanitizedData[key] !== '')
     })
+
+    return ApiResponse.success(res, updatedResident, 'Resident updated successfully')
 
   } catch (error) {
     logger.error('Error updating resident', error)
-    res.status(500).json({
-      success: false,
-      error: 'Failed to update resident'
+    return ApiResponse.error(res, 'Failed to update resident. Please try again.', 500)
+  }
+})
+
+// PATCH /api/residents/:id/status - Update resident status (admin only)
+router.patch('/residents/:id/status', generalLimiter, authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params
+    const { is_active } = req.body
+
+    // Validate resident ID
+    if (!id || isNaN(parseInt(id))) {
+      return ApiResponse.error(res, 'Valid resident ID is required', 400)
+    }
+
+    // Validate is_active value
+    if (is_active === undefined || ![0, 1].includes(parseInt(is_active))) {
+      return ApiResponse.error(res, 'is_active must be 0 (inactive) or 1 (active)', 400)
+    }
+
+    // Quick status toggle without full validation
+    const updatedResident = await ResidentRepository.updateStatus(id, parseInt(is_active))
+
+    if (!updatedResident) {
+      return ApiResponse.error(res, 'Resident not found', 404)
+    }
+
+    logger.info(`Resident status updated by ${req.user.username}`, { 
+      residentId: id, 
+      newStatus: is_active === 1 ? 'active' : 'inactive'
     })
+
+    return ApiResponse.success(res, { 
+      id: updatedResident.id, 
+      is_active: updatedResident.is_active 
+    }, `Resident ${is_active === 1 ? 'activated' : 'deactivated'} successfully`)
+
+  } catch (error) {
+    logger.error('Error updating resident status', error)
+    return ApiResponse.error(res, 'Failed to update resident status. Please try again.', 500)
   }
 })
 

@@ -93,24 +93,24 @@ class Validator {
       errors.push('First name is required')
     } else if (data.firstName.trim().length > 50) {
       errors.push('First name must be less than 50 characters')
-    } else if (!/^[a-zA-Z\s'-]+$/.test(data.firstName.trim())) {
-      errors.push('First name can only contain letters, spaces, hyphens, and apostrophes')
+    } else if (!/^[a-zA-Z\s]+$/.test(data.firstName.trim())) {
+      errors.push('First name can only contain letters and spaces')
     }
     
     if (!data.lastName || data.lastName.trim().length === 0) {
       errors.push('Last name is required')
     } else if (data.lastName.trim().length > 50) {
       errors.push('Last name must be less than 50 characters')
-    } else if (!/^[a-zA-Z\s'-]+$/.test(data.lastName.trim())) {
-      errors.push('Last name can only contain letters, spaces, hyphens, and apostrophes')
+    } else if (!/^[a-zA-Z\s]+$/.test(data.lastName.trim())) {
+      errors.push('Last name can only contain letters and spaces')
     }
     
     // Middle name validation (optional but must be valid format if provided)
     if (data.middleName && data.middleName.trim().length > 0) {
       if (data.middleName.trim().length > 50) {
         errors.push('Middle name must be less than 50 characters')
-      } else if (!/^[a-zA-Z\s'-]+$/.test(data.middleName.trim())) {
-        errors.push('Middle name can only contain letters, spaces, hyphens, and apostrophes')
+      } else if (!/^[a-zA-Z\s]+$/.test(data.middleName.trim())) {
+        errors.push('Middle name can only contain letters and spaces')
       }
     }
     
