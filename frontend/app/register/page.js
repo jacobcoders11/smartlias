@@ -7,7 +7,7 @@ import ToastNotification from '../../components/common/ToastNotification'
 import PublicLayout from '../../components/public/PublicLayout'
 import RegisterCard from '../../components/public/RegisterCard'
 import ChatbotButton from '../../components/common/ChatbotButton'
-import PageLoading from '../../components/common/PageLoading'
+import PageLoadingV2 from '../../components/common/PageLoadingV2'
 import ApiClient from '../../lib/apiClient'
 import { alertToast, sanitizeInput } from '../../lib/utility'
 import { USER_ROLES } from '../../lib/constants'
@@ -23,6 +23,8 @@ export default function RegisterPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingUsername, setIsCheckingUsername] = useState(false)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
+  const [hasAcceptedPrivacy, setHasAcceptedPrivacy] = useState(false)
   const [formData, setFormData] = useState({
     // Name fields
     lastName: '',
@@ -84,6 +86,8 @@ export default function RegisterPage() {
         console.log('Not authenticated, showing register page')
       } finally {
         setIsCheckingAuth(false)
+        // Always show privacy modal on every visit to /register
+        setShowPrivacyModal(true)
       }
     }
 
@@ -456,27 +460,85 @@ export default function RegisterPage() {
     <>
       <ToastNotification ref={toastRef} />
       {isCheckingAuth ? (
-        <PageLoading />
+        <PageLoadingV2 />
       ) : (
         <>
-          <NavigationHeader />
-          <PublicLayout showChatbot={false}>
-            <RegisterCard
-              formData={formData}
-              onInputChange={handleInputChange}
-              onSubmit={handleSubmit}
-              onNext={handleNext}
-              onBack={handleBack}
-              currentStep={currentStep}
-              stepTitle={getStepTitle(currentStep)}
-              isLoading={isLoading}
-              errors={errors}
-              onUsernameBlur={checkUsernameAvailability}
-              isCheckingUsername={isCheckingUsername}
-            />
-          </PublicLayout>
-          <ChatbotButton />
+          {/* Registration page as background (blurred when modal is showing) */}
+          <div className={showPrivacyModal ? 'filter blur-sm pointer-events-none' : ''}>
+            <NavigationHeader />
+            <PublicLayout showChatbot={false}>
+              <RegisterCard
+                formData={formData}
+                onInputChange={handleInputChange}
+                onSubmit={handleSubmit}
+                onNext={handleNext}
+                onBack={handleBack}
+                currentStep={currentStep}
+                stepTitle={getStepTitle(currentStep)}
+                isLoading={isLoading}
+                errors={errors}
+                onUsernameBlur={checkUsernameAvailability}
+                isCheckingUsername={isCheckingUsername}
+              />
+            </PublicLayout>
+            <ChatbotButton />
+          </div>
         </>
+      )}
+
+      {/* Data Privacy Acknowledgement Modal */}
+      {showPrivacyModal && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-lg w-full max-w-md shadow-lg">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center gap-2">
+                <i className="bi bi-shield-check text-lg text-gray-600"></i>
+                <h2 className="text-lg font-semibold text-gray-900">Data Privacy Notice</h2>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-4 max-h-96 overflow-y-auto">
+              <div className="text-sm text-gray-700 space-y-4">
+                <p>
+                  I understand and concur that by clicking the SUBMIT button below, I am agreeing to the Privacy Notice and give my full consent to Barangay Lias and its affiliates as well as its partners and service providers, if any, to collect, store, access and/or process any personal data I may provide herein, such as but not limited to my name, address, telephone number and e-mail address for the period allowed under the applicable law and regulations for the purpose of processing my online application or request.
+                </p>
+                
+                <p>
+                  I acknowledge that the collection and processing of my personal data is necessary for such purpose. I also express my consent for the verification and validation of the information I have submitted related to my online application or request. I am aware of my right to be informed, to access, to object, to erasure or blocking, to damages, to file a complaint, to rectify and to data portability, and I understand that there are procedures, conditions and exceptions to be complied with in order to exercise or invoke such rights.
+                </p>
+
+                <p>
+                  I hereby agree that all Personal Data (as defined under the Data Privacy Law of 2012 and its implementing rules and regulations), customer data and account or transaction information or records (collectively, the "information") which may be with Barangay Lias from time to time relating to us may be processed, profiled or shared to requesting parties or for the purpose of any court, legal process, examination, inquiry, audit or investigation of any Authority. The aforesaid terms shall apply notwithstanding any applicable non-disclosure agreement. We acknowledge that such information may be processed or profiled by or shared with jurisdictions which do not have strict data protection or data privacy laws.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-gray-200 flex gap-2 justify-end">
+              <button
+                onClick={() => {
+                  setShowPrivacyModal(false)
+                  router.push('/')
+                }}
+                className="px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+              >
+                I Do Not Agree
+              </button>
+              <button
+                onClick={() => {
+                  setHasAcceptedPrivacy(true)
+                  setShowPrivacyModal(false)
+                  // Privacy acceptance required on every visit
+                }}
+                className="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+              >
+                I Agree
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   )
