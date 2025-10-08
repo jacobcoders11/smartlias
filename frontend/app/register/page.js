@@ -502,7 +502,7 @@ export default function RegisterPage() {
             <div className="p-4 max-h-96 overflow-y-auto">
               <div className="text-sm text-gray-700 space-y-4">
                 <p>
-                  I understand and concur that by clicking the SUBMIT button below, I am agreeing to the Privacy Notice and give my full consent to Barangay Lias and its affiliates as well as its partners and service providers, if any, to collect, store, access and/or process any personal data I may provide herein, such as but not limited to my name, address, telephone number and e-mail address for the period allowed under the applicable law and regulations for the purpose of processing my online application or request.
+                  I understand and concur that by clicking the I AGREE button below, I am agreeing to the Privacy Notice and give my full consent to Barangay Lias and its affiliates as well as its partners and service providers, if any, to collect, store, access and/or process any personal data I may provide herein, such as but not limited to my name, address, telephone number and e-mail address for the period allowed under the applicable law and regulations for the purpose of processing my online application or request.
                 </p>
                 
                 <p>
