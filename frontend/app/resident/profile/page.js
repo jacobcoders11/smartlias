@@ -4,12 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import ApiClient from '../../../lib/apiClient'
 import PageLoadingV2 from '../../../components/common/PageLoadingV2'
-import { 
-  mapReligionToFrontend, 
-  mapOccupationToFrontend, 
-  mapSpecialCategoryToFrontend,
-  mapGenderToFrontend
-} from '../../../lib/valueMappers'
 
 export default function Profile() {
   const [isLoading, setIsLoading] = useState(true)

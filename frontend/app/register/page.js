@@ -25,7 +25,6 @@ export default function RegisterPage() {
   const [isCheckingUsername, setIsCheckingUsername] = useState(false)
   const [showPrivacyModal, setShowPrivacyModal] = useState(false)
   const [hasAcceptedPrivacy, setHasAcceptedPrivacy] = useState(false)
-  const [registrationSuccessful, setRegistrationSuccessful] = useState(false)
   const [formData, setFormData] = useState({
     // Name fields
     lastName: '',
@@ -49,7 +48,6 @@ export default function RegisterPage() {
     religion: '',
     occupation: '',
     specialCategory: '',
-    documentImage: null, // File object for document upload
     
     // Account credentials
     username: '',
@@ -80,8 +78,6 @@ export default function RegisterPage() {
     
     return { CODE_TO_ID_MAP, ID_TO_CODE_MAP }
   }
-
-
 
   // ============================================
   // CHECK IF ALREADY AUTHENTICATED
@@ -488,19 +484,39 @@ export default function RegisterPage() {
         // Continue anyway, let the backend handle it
       }
       
-      // Prepare registration data with FormData for file upload
-      const formDataToSend = new FormData()
-      
-      // Credentials
-      formDataToSend.append('username', sanitizedUsername)
-      formDataToSend.append('pin', formData.pin)
-      
-      // Personal Information (Step 1)
-      formDataToSend.append('firstName', sanitizeInput(formData.firstName))
-      formDataToSend.append('middleName', sanitizeInput(formData.middleName))
-      formDataToSend.append('lastName', sanitizeInput(formData.lastName))
-      if (formData.suffix) {
-        formDataToSend.append('suffix', parseInt(formData.suffix, 10))
+      // Prepare registration data with all required fields
+      const registrationData = {
+        // Credentials
+        username: sanitizedUsername,
+        pin: formData.pin,
+        
+        // Personal Information (Step 1)
+        firstName: sanitizeInput(formData.firstName),
+        middleName: sanitizeInput(formData.middleName),
+        lastName: sanitizeInput(formData.lastName),
+        suffix: formData.suffix ? parseInt(formData.suffix, 10) : null,
+        
+        // Personal Details (Step 2)
+        birthDate: formData.birthDate,
+        gender: formData.gender ? parseInt(formData.gender, 10) : null,
+        civilStatus: formData.civilStatus,
+        
+        // Contact Information (Step 2)
+        homeNumber: sanitizeInput(formData.homeNumber),
+        mobileNumber: sanitizeInput(formData.mobileNumber),
+        email: sanitizeInput(formData.email),
+        address: sanitizeInput(formData.address),
+        purok: formData.purok ? parseInt(formData.purok, 10) : null,
+        
+        // Additional Information (Step 3)
+        religion: formData.religion,
+        occupation: formData.occupation,
+        specialCategory: formData.specialCategory ? 
+          (() => {
+            const { CODE_TO_ID_MAP } = createCategoryMaps(specialCategories)
+            return CODE_TO_ID_MAP[formData.specialCategory] || null
+          })() : null
+        // Note: notes field is only for admin use, not public registration
       }
       
       // Personal Details (Step 2)
@@ -607,7 +623,7 @@ export default function RegisterPage() {
             onBack={handleBack}
             currentStep={currentStep}
             stepTitle={getStepTitle(currentStep)}
-            isLoading={isLoading || registrationSuccessful}
+            isLoading={isLoading}
             errors={errors}
             specialCategories={specialCategories}
             isLoadingCategories={isLoadingCategories}
@@ -655,12 +671,12 @@ export default function RegisterPage() {
             <div className="p-4 border-t border-gray-200 flex gap-2 justify-end">
               <button
                 onClick={() => {
-                  router.push('/')
                   setShowPrivacyModal(false)
+                  router.push('/')
                 }}
                 className="px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
               >
-                Decline
+                I Do Not Agree
               </button>
               <button
                 onClick={() => {
